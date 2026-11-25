@@ -141,12 +141,12 @@ export function BloomStory() {
   const playhead = useRef<Playhead>({ time: 0 });
   const skipped = useRef(false);
   const [Stage, setStage] = useState<Stage>();
+  const [stageReady, setStageReady] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [opening, setOpening] = useState(true);
   const { products, settings } = useBloom();
   const readyStage = useCallback(() => {
-    root.current?.setAttribute("data-stage-ready", "");
-    playhead.current.render?.();
+    setStageReady(true);
   }, []);
   const noStage = useCallback(() => setDisabled(true), []);
 
@@ -167,6 +167,7 @@ export function BloomStory() {
     function load() {
       if (skipped.current) return;
       if (preference.matches) {
+        setStageReady(false);
         setDisabled(true);
         return;
       }
@@ -191,7 +192,6 @@ export function BloomStory() {
   useEffect(() => {
     const section = root.current;
     const runway = track.current;
-    if (disabled) section?.removeAttribute("data-stage-ready");
     if (!section || !runway || disabled || skipped.current) return;
     const state = playhead.current;
     let start = 0;
@@ -279,6 +279,7 @@ export function BloomStory() {
         ref={root}
         className="bloom-story"
         data-opening={!disabled && opening}
+        data-stage-ready={stageReady ? "" : undefined}
         aria-label="The Gifting Bloom love story"
       >
         <img className="story-garden" src={gardenBackdrop} alt="" decoding="async" />

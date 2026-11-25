@@ -1,5 +1,5 @@
 ﻿import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { storyPose } from "@/lib/bloom-choreography";
 import { ease } from "@/lib/bloom-timing";
@@ -215,6 +215,7 @@ function createStage(
 
 function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void }) {
   const { invalidate, camera, size, gl } = useThree();
+  const drawn = useRef(false);
   const textures = useLoader(THREE.TextureLoader, [castImage, bouquetImage, gripImage, walkingArt]);
   const set = useMemo(
     () => createStage(textures[0]!, textures[1]!, textures[2]!, textures[3]!),
@@ -229,7 +230,7 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
     const contextRestored = () => invalidate();
     canvas.addEventListener("webglcontextlost", contextLost);
     canvas.addEventListener("webglcontextrestored", contextRestored);
-    onReady();
+    invalidate();
     return () => {
       playhead.render = undefined;
       canvas.removeEventListener("webglcontextlost", contextLost);
@@ -252,7 +253,7 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
         actor.material.dispose();
       }
     };
-  }, [playhead, invalidate, onReady, gl, set]);
+  }, [playhead, invalidate, gl, set]);
   useFrame(() => {
     const t = playhead.time;
     const pose = storyPose(t);
@@ -318,6 +319,10 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
     bouquet.group.rotation.z = pose.tilt;
     for (const { sprite, angle } of bouquet.tails) {
       sprite.rotation.z = angle + pose.ribbonSway * (angle < 0 ? 1 : 0.73);
+    }
+    if (!drawn.current) {
+      drawn.current = true;
+      onReady();
     }
   });
   return <primitive object={set.stage} />;
