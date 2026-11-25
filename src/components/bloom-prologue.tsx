@@ -7,7 +7,7 @@ import bouquet from "@/assets/story-sunflower-bouquet.webp";
 import { ProductImage } from "./bloom-products";
 import { BloomLogo } from "./bloom-logo";
 
-export function updatePrologue(section: HTMLElement, time: number) {
+export function updatePrologue(prologue: HTMLElement, time: number) {
   const delivery = ease(time, 5.66, 6.15);
   const detail = ease(time, 3.77, 4.04);
   const confirmation = ease(time, 4.66, 4.93);
@@ -33,7 +33,11 @@ export function updatePrologue(section: HTMLElement, time: number) {
     "gift-caption": ease(time, 7.1, 7.49) * (1 - ease(time, 7.86, 8.43)),
   };
   for (const [name, value] of Object.entries(properties)) {
-    section.style.setProperty(`--${name}`, String(value));
+    const property = `--${name}`;
+    const rounded = value.toFixed(4);
+    if (prologue.style.getPropertyValue(property) !== rounded) {
+      prologue.style.setProperty(property, rounded);
+    }
   }
 }
 

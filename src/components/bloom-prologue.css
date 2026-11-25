@@ -3,13 +3,17 @@
   z-index: 2;
   inset: 0;
   overflow: hidden;
-  opacity: calc(1 - var(--prologue-end, 0));
+  opacity: calc(1 - var(--bouquet-reveal, 0));
   pointer-events: none;
   --actor-width: min(57svh, 68vw, 34rem);
   --phone-left: 84.1%;
   --phone-top: 32.6%;
   --phone-width: 11.95%;
   --phone-camera-width: calc(min(39svh, 78vw, 25rem) / 0.1195);
+}
+
+.bloom-story[data-stage-ready] .bloom-prologue {
+  opacity: calc(1 - var(--prologue-end, 0));
 }
 
 .prologue-phone-shot,

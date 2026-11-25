@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
   type ComponentType,
-  type MouseEvent,
   type ReactNode,
 } from "react";
 import { ProductImage } from "./bloom-products";
@@ -136,23 +135,26 @@ class StoryBoundary extends Component<
 }
 
 export function BloomStory() {
+  const track = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   const meter = useRef<HTMLProgressElement>(null);
   const playhead = useRef<Playhead>({ time: 0 });
-  const pinned = useRef(false);
-  const skippedBeforePin = useRef(false);
+  const skipped = useRef(false);
   const [Stage, setStage] = useState<Stage>();
   const [disabled, setDisabled] = useState(false);
   const [opening, setOpening] = useState(true);
   const { products, settings } = useBloom();
-  const readyStage = useCallback(() => playhead.current.render?.(), []);
+  const readyStage = useCallback(() => {
+    root.current?.setAttribute("data-stage-ready", "");
+    playhead.current.render?.();
+  }, []);
   const noStage = useCallback(() => setDisabled(true), []);
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     const target = hash !== "home" && document.getElementById(hash);
     if (!target) return;
-    skippedBeforePin.current = true;
+    skipped.current = true;
     setDisabled(true);
     setOpening(false);
     const frame = requestAnimationFrame(() => target.scrollIntoView());
@@ -163,7 +165,7 @@ export function BloomStory() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     let alive = true;
     function load() {
-      if (skippedBeforePin.current) return;
+      if (skipped.current) return;
       if (preference.matches) {
         setDisabled(true);
         return;
@@ -188,60 +190,77 @@ export function BloomStory() {
 
   useEffect(() => {
     const section = root.current;
-    if (!section || disabled) return;
-    let alive = true;
-    let revert: (() => void) | undefined;
+    const runway = track.current;
+    if (disabled) section?.removeAttribute("data-stage-ready");
+    if (!section || !runway || disabled || skipped.current) return;
     const state = playhead.current;
-    const master = { time: 0 };
-    Promise.all([import("gsap"), import("gsap/ScrollTrigger")])
-      .then(([{ gsap }, { ScrollTrigger }]) => {
-        if (!alive || skippedBeforePin.current) return;
-        gsap.registerPlugin(ScrollTrigger);
-        const scope = gsap.context(() => {
-          const update = () => {
-            state.time = gardenTimeAt(master.time);
-            if (meter.current) meter.current.value = master.time / storyEnd;
-            updatePrologue(section, master.time);
-            section.style.setProperty("--bouquet-reveal", String(ease(state.time, 6.85, 7.58)));
-            section.style.setProperty("--intro-glow", String(ease(state.time, 5.4, 6.6)));
-            section.style.setProperty("--heart-backdrop", String(ease(state.time, 5.27, 6.18)));
-            section.style.setProperty("--scroll-cue", String(1 - ease(master.time, 0, 0.85)));
-            section.style.setProperty(
-              "--love-caption",
-              String(ease(state.time, 5.7, 6.1) * (1 - ease(state.time, 6.62, 7.1))),
-            );
-            section.toggleAttribute("data-revealed", state.time >= 7.53);
-            state.render?.();
-          };
-          gsap.to(master, {
-            time: storyEnd,
-            ease: "none",
-            onUpdate: update,
-            scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              end: () =>
-                "+=" + Math.round(window.innerHeight * (window.innerWidth <= 700 ? 7.6 : 9.1)),
-              pin: true,
-              anticipatePin: 1,
-              scrub: 0.27,
-              onLeave: () => setOpening(false),
-              onEnterBack: () => setOpening(true),
-              onRefresh: (trigger) => setOpening(trigger.progress < 1),
-            },
-          });
-          update();
-        }, section);
-        pinned.current = true;
-        revert = () => scope.revert();
-      })
-      .catch(noStage);
-    return () => {
-      alive = false;
-      pinned.current = false;
-      revert?.();
+    let start = 0;
+    let distance = 1;
+    let frame = 0;
+    let lastFrame = 0;
+    let time = -1;
+    let inOpening: boolean | undefined;
+    const prologue = section.querySelector<HTMLElement>(".bloom-prologue");
+
+    const render = (at: number) => {
+      time = at;
+      const garden = gardenTimeAt(at);
+      if (meter.current) meter.current.value = at / storyEnd;
+      if (prologue) updatePrologue(prologue, at);
+      section.style.setProperty("--bouquet-reveal", String(ease(garden, 6.85, 7.58)));
+      section.style.setProperty("--intro-glow", String(ease(garden, 5.4, 6.6)));
+      section.style.setProperty("--heart-backdrop", String(ease(garden, 5.27, 6.18)));
+      section.style.setProperty("--scroll-cue", String(1 - ease(at, 0, 0.85)));
+      section.style.setProperty(
+        "--love-caption",
+        String(ease(garden, 5.7, 6.1) * (1 - ease(garden, 6.62, 7.1))),
+      );
+      section.toggleAttribute("data-revealed", garden >= 7.53);
+      if (state.time !== garden) {
+        state.time = garden;
+        state.render?.();
+      }
     };
-  }, [disabled, noStage]);
+
+    function tick(now: number) {
+      frame = 0;
+      const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+      const target = progress * storyEnd;
+      const next =
+        time < 0 || Math.abs(target - time) < 0.006
+          ? target
+          : time + (target - time) * (1 - Math.exp(-((lastFrame ? now - lastFrame : 16) / 54)));
+      if (next !== time) render(next);
+      if (inOpening !== progress < 1) {
+        inOpening = progress < 1;
+        setOpening(inOpening);
+      }
+      lastFrame = next === target ? 0 : now;
+      if (lastFrame) requestTick();
+    }
+
+    function requestTick() {
+      if (!frame) frame = requestAnimationFrame(tick);
+    }
+
+    const measure = () => {
+      start = runway.getBoundingClientRect().top + window.scrollY;
+      distance = Math.max(1, runway.offsetHeight - section.offsetHeight);
+      requestTick();
+    };
+
+    // Watch the stable story height so the mobile address bar cannot reset the playhead.
+    const resize = new ResizeObserver(measure);
+    resize.observe(runway);
+    resize.observe(section);
+    window.addEventListener("scroll", requestTick, { passive: true });
+    measure();
+    return () => {
+      resize.disconnect();
+      window.removeEventListener("scroll", requestTick);
+      cancelAnimationFrame(frame);
+    };
+  }, [disabled]);
 
   const bouquets = products
     .filter((product) => product.category === "bouquets" && product.image_url)
@@ -254,87 +273,77 @@ export function BloomStory() {
     .filter((product) => product.image_url && product.id !== sunflower?.id)
     .slice(0, 3);
 
-  function skipBeforePin(event: MouseEvent<HTMLAnchorElement>) {
-    if (pinned.current || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    skippedBeforePin.current = true;
-    setDisabled(true);
-    requestAnimationFrame(() => {
-      const gallery = document.getElementById("gift-gallery");
-      gallery?.scrollIntoView();
-      gallery?.focus({ preventScroll: true });
-    });
-  }
-
   return (
-    <section
-      ref={root}
-      className="bloom-story"
-      data-opening={!disabled && opening}
-      data-static={disabled}
-      aria-label="The Gifting Bloom love story"
-    >
-      <img className="story-garden" src={gardenBackdrop} alt="" decoding="async" />
-      <picture className="story-heart-aura">
-        <source media="(max-aspect-ratio: 4/5)" srcSet={mobileHeartAura} />
-        <img src={heartAura} alt="" decoding="async" />
-      </picture>
-      <div className="story-grain" aria-hidden="true" />
-      <BloomPrologue logo={settings["logo"]} gifts={previewGifts} sunflower={sunflower} />
-      <a
-        className="intro-skip"
-        href="#gift-gallery"
-        aria-label="Skip animation and explore the gallery"
-        onClick={skipBeforePin}
+    <div ref={track} className="bloom-story-track" data-static={disabled}>
+      <section
+        ref={root}
+        className="bloom-story"
+        data-opening={!disabled && opening}
+        aria-label="The Gifting Bloom love story"
       >
-        <SkipForward size={19} aria-hidden="true" />
-      </a>
+        <img className="story-garden" src={gardenBackdrop} alt="" decoding="async" />
+        <picture className="story-heart-aura">
+          <source media="(max-aspect-ratio: 4/5)" srcSet={mobileHeartAura} />
+          <img src={heartAura} alt="" decoding="async" />
+        </picture>
+        <div className="story-grain" aria-hidden="true" />
+        <BloomPrologue logo={settings["logo"]} gifts={previewGifts} sunflower={sunflower} />
+        <a
+          className="intro-skip"
+          href="#gift-gallery"
+          aria-label="Skip animation and explore the gallery"
+        >
+          <SkipForward size={19} aria-hidden="true" />
+        </a>
 
-      <div className="intro-art" aria-hidden="true">
-        <div className="intro-glow" />
-        <div className="intro-canvas">
-          {!disabled && Stage && (
-            <StoryBoundary onUnavailable={noStage}>
-              <Stage playhead={playhead.current} onReady={readyStage} />
-            </StoryBoundary>
-          )}
+        <div className="intro-art" aria-hidden="true">
+          <div className="intro-glow" />
+          <div className="intro-canvas">
+            {!disabled && Stage && (
+              <StoryBoundary onUnavailable={noStage}>
+                <Stage playhead={playhead.current} onReady={readyStage} />
+              </StoryBoundary>
+            )}
+          </div>
+          <div className="intro-bouquets">
+            {bouquets.map((product) => (
+              <div key={product.id}>
+                <ProductImage src={product.image_url} alt="" />
+              </div>
+            ))}
+            {!bouquets.length && (
+              <img className="intro-bouquet-fallback" src={bouquetImage} alt="" />
+            )}
+          </div>
         </div>
-        <div className="intro-bouquets">
-          {bouquets.map((product) => (
-            <div key={product.id}>
-              <ProductImage src={product.image_url} alt="" />
-            </div>
-          ))}
-          {!bouquets.length && <img className="intro-bouquet-fallback" src={bouquetImage} alt="" />}
-        </div>
-      </div>
 
-      <p className="story-love-caption">And Just Like That… A Love Story Begins.</p>
-      <div className="story-gallery-reveal">
-        <p>Every Love Story Deserves a Bloom.</p>
-        <div>
-          <Link to="/" hash="collection" search={{ category: "bouquets" }}>
-            Explore Our Bouquets
-          </Link>
-          <Link to="/" hash="collection" search={{}}>
-            Explore the Gallery
-          </Link>
-          <Link to="/" hash="customise" search={true}>
-            Customise Your Gift
-          </Link>
+        <p className="story-love-caption">And Just Like That… A Love Story Begins.</p>
+        <div className="story-gallery-reveal">
+          <p>Every Love Story Deserves a Bloom.</p>
+          <div>
+            <Link to="/" hash="collection" search={{ category: "bouquets" }}>
+              Explore Our Bouquets
+            </Link>
+            <Link to="/" hash="collection" search={{}}>
+              Explore the Gallery
+            </Link>
+            <Link to="/" hash="customise" search={true}>
+              Customise Your Gift
+            </Link>
+          </div>
         </div>
-      </div>
-      <div className="intro-scroll-cue" aria-hidden="true">
-        <span>Scroll to Discover</span>
-        <ChevronsDown size={22} />
-      </div>
-      <progress
-        className="sr-only"
-        ref={meter}
-        max={1}
-        defaultValue={0}
-        aria-label="Story progress"
-      />
-    </section>
+        <div className="intro-scroll-cue" aria-hidden="true">
+          <span>Scroll to Discover</span>
+          <ChevronsDown size={22} />
+        </div>
+        <progress
+          className="sr-only"
+          ref={meter}
+          max={1}
+          defaultValue={0}
+          aria-label="Story progress"
+        />
+      </section>
+    </div>
   );
 }

@@ -260,8 +260,8 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
     const ratio = size.width / Math.max(1, size.height);
     const closeUp = ease(t, 4.34, 4.91) * (1 - ease(t, 5.32, 5.98));
     const portrait = 1 - ease(ratio, 0.7, 0.96);
-    const meeting = ease(t, 2.8, 3.4);
-    const pairWidth = Math.max(3.52, pose.girlX - pose.boyX + 1.34);
+    const meeting = ease(t, 3.14, 3.9);
+    const pairWidth = THREE.MathUtils.clamp(pose.girlX - pose.boyX + 1.34, 3.52, 4.45);
     const portraitWidth = THREE.MathUtils.lerp(2.52, pairWidth, meeting);
     const frameWidth = THREE.MathUtils.lerp(4.24 - 0.64 * closeUp, portraitWidth, portrait);
     const vertical =
@@ -330,12 +330,13 @@ export default function BloomStage({
   playhead: Playhead;
   onReady: () => void;
 }) {
+  const touchScreen = window.matchMedia("(pointer: coarse)").matches;
   return (
     <Canvas
       orthographic
       camera={{ near: 0.01, far: 24, position: [0, 2.05, 8] }}
       frameloop="demand"
-      dpr={[1, 1.35]}
+      dpr={[1, touchScreen ? 1 : 1.35]}
       gl={{ alpha: true, antialias: true }}
     >
       <Scene playhead={playhead} onReady={onReady} />
