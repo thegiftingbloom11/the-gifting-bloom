@@ -15,7 +15,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
-import { colourValue, matchesProductCategory, occasions, type Product } from "@/lib/bloom";
+import {
+  colourValue,
+  matchesProductCategory,
+  matchesProductColours,
+  occasions,
+  type Product,
+} from "@/lib/bloom";
 import anniversaryWallpaper from "@/assets/gift-finder-anniversary-wallpaper.jpg";
 import anyOccasionWallpaper from "@/assets/gift-finder-any-occasion-wallpaper.jpg";
 import birthdayWallpaper from "@/assets/gift-finder-birthday-wallpaper.jpg";
@@ -360,6 +366,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   const [manualColour, setManualColour] = useState(false);
   const palette = [...new Set(products.flatMap(({ colors }) => colors))];
   const enteredColour = answers[2].trim();
+  const anyColour = enteredColour.toLowerCase() === "any colour";
   const selectedColour =
     palette.find((colour) => colour.toLowerCase() === enteredColour.toLowerCase()) ?? enteredColour;
   function selectAnswer(value: string) {
@@ -382,7 +389,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   ] as const;
 
   const rank = (item: Product) =>
-    Number(item.occasions.includes(answers[1])) * 3 +
+    Number(item.occasions.includes(answers[1])) * 4 +
     Number(item.colors.includes(selectedColour)) * 2 +
     Number(
       answers[0] === "Partner"
@@ -391,13 +398,12 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
             matchesProductCategory(item.category, "mini-gifts"),
     );
   const matches = products
-    .filter(
-      (item) =>
-        (selectedColour === "Any colour" || item.colors.includes(selectedColour)) &&
-        (answers[1] === "Any occasion" || item.occasions.includes(answers[1])),
+    .filter((item) =>
+      anyColour
+        ? answers[1] === "Any occasion" || item.occasions.includes(answers[1])
+        : matchesProductColours(item, selectedColour),
     )
-    .sort((a, b) => rank(b) - rank(a))
-    .slice(0, 4);
+    .sort((a, b) => rank(b) - rank(a));
   const Container = embedded ? "section" : "main";
   return (
     <Container
@@ -490,9 +496,19 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
         <div>
           <h2>{matches.length ? "Blooms picked for you" : "No exact matches this time."}</h2>
           {matches.length ? (
-            <ProductGrid items={matches} embedded={embedded} />
+            <>
+              <p className="fine result-count">
+                {matches.length} {matches.length === 1 ? "gift" : "gifts"}
+                {!anyColour && ` in ${selectedColour}`}
+              </p>
+              <ProductGrid items={matches} embedded={embedded} />
+            </>
           ) : (
-            <p>Try a different occasion or colour to see more gifts.</p>
+            <p>
+              {anyColour
+                ? "Try a different occasion."
+                : "Try another colour or request a custom gift."}
+            </p>
           )}
           <div className="button-row section-space">
             <button className="btn btn-outline" onClick={() => setStep(0)}>

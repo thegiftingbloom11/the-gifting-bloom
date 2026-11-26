@@ -68,6 +68,47 @@ export type Product = Omit<
   | "stock_count"
 > &
   ProductOptions & { category: string; categoryName: string };
+
+const colourShades = new Map<string, string[]>([
+  ["red", ["burgundy", "maroon", "crimson", "scarlet"]],
+  ["pink", ["blush", "magenta", "fuchsia"]],
+  ["green", ["sage", "lime", "olive", "emerald"]],
+  ["purple", ["lavender", "lilac", "violet", "plum"]],
+  ["yellow", ["gold", "golden", "mustard"]],
+  ["gold", ["golden"]],
+  ["white", ["ivory", "cream"]],
+]);
+
+function normaliseColour(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}#]+/gu, " ")
+    .trim();
+}
+
+export function matchesProductColours(
+  product: Pick<Product, "colors" | "name" | "description" | "variants">,
+  preference: string,
+) {
+  const tags = product.colors.map(normaliseColour);
+  const colour = normaliseColour(preference);
+  if (colour && tags.includes(colour)) return true;
+
+  const requested = preference
+    .split(/\s+(?:and|with)\s+|[,/&+]+/i)
+    .map(normaliseColour)
+    .filter(Boolean);
+  const text = ` ${normaliseColour([product.name, product.description, ...product.variants].join(" "))} `;
+  return (
+    requested.length > 0 &&
+    requested.every((value) =>
+      [value, ...(colourShades.get(value) ?? [])].some(
+        (shade) => tags.includes(shade) || text.includes(` ${shade} `),
+      ),
+    )
+  );
+}
+
 export const customSchema = z.object({
   flower: z.enum(["rose", "daisy", "sunflower"]),
   count: z.number().int().min(1).max(24),

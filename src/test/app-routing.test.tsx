@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { galleryRedirect, resolvePage } from "@/app";
 import type { StoreData } from "@/lib/bloom-api";
 import { studioCollection, withStudioCollection } from "@/lib/bloom-collection";
-import { matchesProductCategory } from "@/lib/bloom";
+import { matchesProductCategory, matchesProductColours } from "@/lib/bloom";
 
 const catalogue: StoreData = {
   products: studioCollection,
@@ -57,6 +57,32 @@ describe("App routing", () => {
   it("redirects the legacy gallery URL with its occasion filter", () => {
     expect(galleryRedirect(new URL("https://example.com/shop?occasion=Just%20Because"))).toBe(
       "/?occasion=Just+Because#collection",
+    );
+  });
+
+  it("finds typed colours in catalogue descriptions and recognises named shades", () => {
+    const reds = studioCollection.filter((product) => matchesProductColours(product, "  rEd  "));
+    expect(reds.map(({ slug }) => slug)).toEqual(
+      expect.arrayContaining([
+        "wrapped-red-lily",
+        "red-lily-bouquet",
+        "burgundy-lily-bouquet",
+        "red-green-single-diya-holder",
+        "red-yellow-diya-holders",
+        "shubh-labh-hangings",
+      ]),
+    );
+    expect(reds.map(({ slug }) => slug)).not.toContain("wrapped-pink-lily");
+  });
+
+  it("matches each colour in a typed combination", () => {
+    const redAndGreen = studioCollection.filter((product) =>
+      matchesProductColours(product, "Red & green"),
+    );
+    expect(redAndGreen.map(({ slug }) => slug)).toContain("red-green-diya-holders");
+    expect(redAndGreen.map(({ slug }) => slug)).not.toContain("wrapped-red-lily");
+    expect(studioCollection.some((product) => matchesProductColours(product, "unlisted"))).toBe(
+      false,
     );
   });
 
