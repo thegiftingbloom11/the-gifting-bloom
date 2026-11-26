@@ -352,9 +352,13 @@ export function Contact({
     const form = new FormData(element);
     setError("");
     setSent(false);
-    const city = String(form.get("city") ?? "").trim();
+    const deliveryAddress = String(form.get("delivery-address") ?? "").trim();
     const neededBy = String(form.get("needed-by") ?? "");
     const enquiry = String(form.get("message") ?? "").trim();
+    if (!deliveryAddress) {
+      setError("Please enter your full delivery address, including the PIN code.");
+      return;
+    }
     if (enquiry.length < 5) {
       setError("Please tell us a little more about your enquiry.");
       return;
@@ -372,7 +376,7 @@ export function Contact({
           email: form.get("email"),
           phone: form.get("phone"),
           message: enquiry,
-          ...(city && { "Delivery city": city }),
+          "Delivery address": deliveryAddress,
           ...(neededBy && { "Needed by": neededBy }),
           ...(form.has("botcheck") && { botcheck: true }),
         }),
@@ -459,13 +463,15 @@ export function Contact({
             </label>
             <label>
               <span>
-                Delivery city <small>Optional</small>
+                Delivery address <span aria-hidden="true">*</span>
               </span>
-              <input
-                name="city"
-                maxLength={80}
-                autoComplete="address-level2"
-                placeholder="e.g. Pune"
+              <textarea
+                name="delivery-address"
+                required
+                maxLength={500}
+                rows={2}
+                autoComplete="shipping street-address"
+                placeholder="Flat or house no., street, area, city, state and PIN code"
               />
             </label>
             <label>
@@ -494,7 +500,7 @@ export function Contact({
               </p>
             )}
             {sent && (
-              <p role="status" className="contact-span">
+              <p role="status" className="contact-success contact-span">
                 Thanks! Your enquiry has been sent.
               </p>
             )}

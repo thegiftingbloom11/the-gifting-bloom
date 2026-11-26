@@ -1316,6 +1316,9 @@ input[type="checkbox"] {
 .contact-span {
   grid-column: 1 / -1;
 }
+.contact-success {
+  color: #17643d;
+}
 .contact-submit {
   display: flex;
   flex-wrap: wrap;

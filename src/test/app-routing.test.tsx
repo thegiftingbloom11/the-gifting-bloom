@@ -36,9 +36,15 @@ describe("App routing", () => {
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: "Test Customer" } });
       fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "test@example.com" } });
       fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "9876543210" } });
-      fireEvent.change(screen.getByLabelText(/delivery city/i), { target: { value: "Pune" } });
       fireEvent.change(screen.getByLabelText(/needed by/i), { target: { value: "2026-12-01" } });
       const button = screen.getByRole("button", { name: "Send enquiry" });
+      const address = screen.getByLabelText(/delivery address/i);
+      expect(address).toBeRequired();
+      fireEvent.click(button);
+      expect(submit).not.toHaveBeenCalled();
+
+      const deliveryAddress = "Flat 2, 18 Main Road\nUruli Kanchan, Pune, Maharashtra 412202";
+      fireEvent.change(address, { target: { value: deliveryAddress } });
       fireEvent.click(button);
       expect(await screen.findByRole("alert")).toHaveTextContent("Please try again");
       expect(screen.getByLabelText(/full name/i)).toHaveValue("Test Customer");
@@ -56,7 +62,7 @@ describe("App routing", () => {
         name: "Test Customer",
         email: "test@example.com",
         phone: "9876543210",
-        "Delivery city": "Pune",
+        "Delivery address": deliveryAddress,
         "Needed by": "2026-12-01",
         message: "Hi! I'd like to ask about Sunflower Bouquet.",
       });
