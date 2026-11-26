@@ -44,3 +44,15 @@ export function storyTimeAtScroll(progress: number) {
   }
   return storyEnd;
 }
+
+export function keepStoryBeat(current: number, next: number) {
+  for (let index = 1; index < scrollBeats.length; index++) {
+    const [start, startTime] = scrollBeats[index - 1]!;
+    const [end, endTime] = scrollBeats[index]!;
+    if (startTime !== endTime) continue;
+    if ((current < start && next > end) || (current > end && next < start)) {
+      next = (start + end) / 2;
+    }
+  }
+  return next;
+}

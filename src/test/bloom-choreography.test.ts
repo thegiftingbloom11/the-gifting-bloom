@@ -3,6 +3,7 @@ import { contactEnd, contactStart, storyPose } from "@/lib/bloom-choreography";
 import {
   gardenStart,
   gardenTimeAt,
+  keepStoryBeat,
   storyEnd,
   storyTimeAtScroll,
   timelineEnd,
@@ -33,6 +34,16 @@ describe("scroll timing", () => {
     }
     expect(previous).toBe(storyEnd);
     expect(storyTimeAtScroll(1.1)).toBe(storyEnd);
+  });
+
+  it("keeps a large frame step from jumping over a scene in either direction", () => {
+    const forward = keepStoryBeat(0.1, 0.98);
+    expect(storyTimeAtScroll(forward)).toBe(2.48);
+    expect(storyTimeAtScroll(keepStoryBeat(forward, 0.98))).toBe(4.16);
+
+    const backward = keepStoryBeat(0.97, 0.1);
+    expect(storyTimeAtScroll(backward)).toBe(12.8);
+    expect(storyTimeAtScroll(keepStoryBeat(backward, 0.1))).toBe(7.58);
   });
 });
 
