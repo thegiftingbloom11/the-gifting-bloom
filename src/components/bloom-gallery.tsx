@@ -3,7 +3,9 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Cake,
+  Flame,
   Flower2,
+  Gem,
   Gift,
   GraduationCap,
   Heart,
@@ -11,9 +13,12 @@ import {
   PartyPopper,
   Sparkles,
   Users,
+  type LucideIcon,
 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import { colourValue, matchesProductCategory, occasions, type Product } from "@/lib/bloom";
+import birthdayWallpaper from "@/assets/gift-finder-birthday-wallpaper.jpg";
+import valentineWallpaper from "@/assets/gift-finder-valentine-wallpaper.jpg";
 import { useBloom } from "./bloom-shell";
 import {
   PageHeading,
@@ -219,16 +224,29 @@ const recipientArt = {
   Colleague: { icon: BriefcaseBusiness, accent: "#8ba684" },
   Anyone: { icon: Gift, accent: "#c47765" },
 };
-const occasionArt = {
-  "Valentine's Day": { icon: Heart, accent: "#b84d69" },
-  Birthdays: { icon: Cake, accent: "#c6814c" },
-  Anniversaries: { icon: Heart, accent: "#b97a9a" },
-  "Friendship Day": { icon: HeartHandshake, accent: "#ae99cc" },
-  Graduation: { icon: GraduationCap, accent: "#9b88bd" },
-  Congratulations: { icon: PartyPopper, accent: "#c49451" },
-  "Festive Gifting": { icon: Sparkles, accent: "#cc9d5f" },
-  "Just Because": { icon: Flower2, accent: "#8ba684" },
-  "Any occasion": { icon: Gift, accent: "#c47765" },
+const occasionArt: Record<
+  (typeof occasions)[number] | "Any occasion",
+  { icon: LucideIcon; accent: string; edge: string; wallpaper?: string; motif?: LucideIcon }
+> = {
+  "Valentine's Day": {
+    icon: Heart,
+    accent: "#b12c47",
+    edge: "#e87788",
+    wallpaper: valentineWallpaper,
+  },
+  Birthdays: { icon: Cake, accent: "#b65175", edge: "#e5b9e3", wallpaper: birthdayWallpaper },
+  Anniversaries: { icon: Heart, motif: Gem, accent: "#a85881", edge: "#ebbecf" },
+  "Friendship Day": {
+    icon: HeartHandshake,
+    motif: HeartHandshake,
+    accent: "#8260ac",
+    edge: "#d6c6ee",
+  },
+  Graduation: { icon: GraduationCap, motif: GraduationCap, accent: "#68549b", edge: "#cabfe9" },
+  Congratulations: { icon: PartyPopper, motif: PartyPopper, accent: "#ac661c", edge: "#f2cf8b" },
+  "Festive Gifting": { icon: Sparkles, motif: Flame, accent: "#b4672c", edge: "#edbd87" },
+  "Just Because": { icon: Flower2, motif: Flower2, accent: "#517b52", edge: "#c6d8b4" },
+  "Any occasion": { icon: Gift, motif: Gift, accent: "#a65f51", edge: "#efcaba" },
 };
 
 function GiftFinderPreview({ step, answers }: { step: number; answers: [string, string, string] }) {
@@ -237,6 +255,8 @@ function GiftFinderPreview({ step, answers }: { step: number; answers: [string, 
   const scene = step === 2 ? 5 : recipientIndex < 0 ? 4 : recipientIndex;
   const person = recipientArt[recipients[recipientIndex] ?? "Anyone"];
   const event = occasionArt[occasion as keyof typeof occasionArt] ?? occasionArt["Any occasion"];
+  const themed = step === 1 && !!occasion;
+  const Motif = event.motif;
   const selected = answers[step];
   const { icon: Icon, accent } =
     step === 0
@@ -252,8 +272,28 @@ function GiftFinderPreview({ step, answers }: { step: number; answers: [string, 
     <div
       className="gift-finder-preview"
       aria-hidden="true"
-      style={{ "--finder-accent": accent } as CSSProperties}
+      data-occasion={themed ? occasion : undefined}
+      style={
+        {
+          "--finder-accent": accent,
+          "--finder-edge": themed ? event.edge : undefined,
+        } as CSSProperties
+      }
     >
+      {themed && event.wallpaper && (
+        <div
+          className="gift-finder-wallpaper"
+          key={occasion}
+          style={{ backgroundImage: `url(${event.wallpaper})` }}
+        />
+      )}
+      {themed && Motif && (
+        <div className="gift-finder-motifs" key={occasion}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <Motif key={index} strokeWidth={1.35} />
+          ))}
+        </div>
+      )}
       <div className="gift-finder-scene" key={step + ":" + selected}>
         <div className="gift-finder-art" data-scene={scene} />
         <div className="gift-finder-caption">

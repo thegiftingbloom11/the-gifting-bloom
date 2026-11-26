@@ -1267,6 +1267,7 @@ input[type="checkbox"] {
   overflow-wrap: anywhere;
 }
 .gift-finder-preview {
+  position: relative;
   display: grid;
   place-items: center;
   isolation: isolate;
@@ -1277,10 +1278,61 @@ input[type="checkbox"] {
   background: radial-gradient(
     ellipse at 55% 35%,
     #fffaf1 16%,
-    color-mix(in srgb, #f9ede4, var(--finder-accent) 24%)
+    var(--finder-edge, color-mix(in srgb, #f9ede4, var(--finder-accent) 24%))
   );
 }
+.gift-finder-wallpaper {
+  position: absolute;
+  inset: 0;
+  background-position: center 78%;
+  background-size: cover;
+  pointer-events: none;
+  animation: gift-finder-wallpaper-in 420ms ease-out;
+}
+.gift-finder-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 46%, #fff8edf0 10%, #fff8edb8 27%, transparent 63%);
+}
+.gift-finder-preview[data-occasion="Valentine's Day"] .gift-finder-wallpaper {
+  background-position: center 56%;
+  background-color: #f5a1a4;
+  background-blend-mode: multiply;
+}
+@keyframes gift-finder-wallpaper-in {
+  from {
+    opacity: 0;
+  }
+}
+.gift-finder-motifs {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+  padding: 7% 9%;
+  color: color-mix(in srgb, var(--finder-accent), #fff 25%);
+  pointer-events: none;
+}
+.gift-finder-motifs svg {
+  width: clamp(24px, 4vw, 53px);
+  height: auto;
+  rotate: -13deg;
+  animation: gift-finder-arrive 480ms ease-out;
+}
+.gift-finder-motifs svg:nth-child(even) {
+  justify-self: end;
+  rotate: 15deg;
+}
+.gift-finder-motifs svg:nth-child(3),
+.gift-finder-motifs svg:nth-child(6) {
+  scale: 0.77;
+  opacity: 0.65;
+}
 .gift-finder-scene {
+  position: relative;
   width: min(74%, 215px);
   display: grid;
   justify-items: center;
@@ -1317,6 +1369,11 @@ input[type="checkbox"] {
   color: var(--plum);
   font-size: 0.9rem;
   font-weight: 700;
+}
+.gift-finder-preview[data-occasion] .gift-finder-caption > span + span {
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fff9f2;
 }
 .gift-finder-symbol {
   display: grid;
