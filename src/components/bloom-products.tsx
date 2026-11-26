@@ -176,10 +176,10 @@ export function ProductCard({
               )}
             </h3>
           </div>
-          <Swatches values={product.colors} />
+          {!!product.colors.length && <Swatches values={product.colors} />}
           <div className="product-actions">
             <DialogTrigger asChild>
-              <button type="button" className="text-link">
+              <button type="button" className="btn btn-primary product-cta">
                 {embedded ? "View gift" : "Quick view"}
               </button>
             </DialogTrigger>
@@ -187,12 +187,14 @@ export function ProductCard({
               <Link className="text-link" to="/" hash="customise" search={true}>
                 Customise <ArrowRight size={14} />
               </Link>
+            ) : embedded ? (
+              <Link className="text-link" to="/" hash="contact" search={true}>
+                Enquire <ArrowRight size={14} />
+              </Link>
             ) : (
-              !embedded && (
-                <Link className="text-link" to="/product/$slug" params={{ slug: product.slug }}>
-                  View gift <ArrowRight size={14} />
-                </Link>
-              )
+              <Link className="text-link" to="/product/$slug" params={{ slug: product.slug }}>
+                View gift <ArrowRight size={14} />
+              </Link>
             )}
           </div>
         </div>

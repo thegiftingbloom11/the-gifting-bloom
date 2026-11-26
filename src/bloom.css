@@ -625,10 +625,10 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 }
 .product-info {
   flex: 1;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: 8px;
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 13px 12px;
 }
 .product-title {
   display: flex;
@@ -644,26 +644,20 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
   overflow-wrap: anywhere;
 }
 .product-actions {
-  align-self: end;
-  border-top: 1px solid var(--rule);
+  margin-top: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   gap: 6px;
-  padding-top: 8px;
+  padding-top: 3px;
 }
-.product-actions .text-link {
-  min-height: 33px;
+.product-actions :is(.product-cta, .text-link) {
+  min-height: 36px;
+  font-size: 0.8rem;
 }
-.product-actions button.text-link {
-  border-radius: 999px;
-  padding: 4px 10px;
-  color: var(--plum);
-  background: #f8e8eb;
-  text-decoration: none;
-}
-.product-actions button.text-link:hover {
-  background: #f2d9e0;
+.product-actions .product-cta {
+  padding: 5px 12px;
 }
 .swatches {
   display: flex;
@@ -1565,9 +1559,12 @@ progress {
     padding: 9px;
     gap: 5px;
   }
-  .product-actions .text-link {
+  .product-actions :is(.product-cta, .text-link) {
     font-size: 0.74rem;
     min-height: 44px;
+  }
+  .product-actions .product-cta {
+    padding-inline: 9px;
   }
   .demo-pill {
     top: 8px;
