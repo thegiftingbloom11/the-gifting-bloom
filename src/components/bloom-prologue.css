@@ -148,7 +148,7 @@
   border-radius: 11% / 5.5%;
   color: #4d293a;
   background: #fff9f4;
-  font-family: var(--font-body, system-ui, sans-serif);
+  font-family: var(--body);
 }
 
 .prologue-screen::after {
@@ -357,9 +357,10 @@
 
 .prologue-confirmation strong {
   max-width: 67cqw;
-  font-family: Georgia, serif;
-  font-size: 11cqw;
-  line-height: 1.05;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 10.5cqw;
+  line-height: 1.12;
 }
 
 .prologue-order-icon {
@@ -405,15 +406,15 @@
 .prologue-smile-caption p,
 .story-love-caption,
 .story-gallery-reveal p {
-  font-family: Georgia, serif;
+  font-family: var(--display);
   font-weight: 500;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.035em;
 }
 
 .prologue-caption h1 {
   margin: 0 0 0.7rem;
   font-size: clamp(2.1rem, 4.6vw, 4.8rem);
-  line-height: 0.99;
+  line-height: 1.1;
 }
 
 .prologue-caption p {
@@ -619,7 +620,7 @@
     text-align: center;
   }
   .prologue-caption h1 {
-    font-size: clamp(1.9rem, 8vw, 3.5rem);
+    font-size: clamp(1.6rem, 7vw, 3.1rem);
   }
   .prologue-receiving {
     left: 50%;

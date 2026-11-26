@@ -28,11 +28,19 @@ export function BloomDocument({
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="icon" href="/favicon.ico" sizes="32x32 48x48 64x64" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=DM+Sans:wght@400;500;600;700&display=swap"
+          rel="preload"
+          href="/fonts/lora.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/dm-sans.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
         {data.assets.css.map((attributes) => (
           <link key={attributes.href} rel="stylesheet" {...attributes} />
