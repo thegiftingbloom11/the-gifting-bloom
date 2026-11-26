@@ -1,7 +1,19 @@
 import { Link, useNavigate } from "./bloom-navigation";
-import { ArrowRight } from "lucide-react";
-import { useState } from "react";
-import { matchesProductCategory, occasions, type Product } from "@/lib/bloom";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Cake,
+  Flower2,
+  Gift,
+  GraduationCap,
+  Heart,
+  HeartHandshake,
+  PartyPopper,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { useState, type CSSProperties } from "react";
+import { colourValue, matchesProductCategory, occasions, type Product } from "@/lib/bloom";
 import { useBloom } from "./bloom-shell";
 import {
   PageHeading,
@@ -198,6 +210,63 @@ export function Detail({ product }: { product: Product }) {
     </main>
   );
 }
+const recipients = ["Partner", "Friend", "Family", "Colleague", "Anyone"] as const;
+const finderSteps = ["Recipient", "Occasion", "Colour"] as const;
+const recipientArt = {
+  Partner: { icon: Heart, accent: "#b84d69" },
+  Friend: { icon: HeartHandshake, accent: "#ae99cc" },
+  Family: { icon: Users, accent: "#ad8f54" },
+  Colleague: { icon: BriefcaseBusiness, accent: "#8ba684" },
+  Anyone: { icon: Gift, accent: "#c47765" },
+};
+const occasionArt = {
+  "Valentine's Day": { icon: Heart, accent: "#b84d69" },
+  Birthdays: { icon: Cake, accent: "#c6814c" },
+  Anniversaries: { icon: Heart, accent: "#b97a9a" },
+  "Friendship Day": { icon: HeartHandshake, accent: "#ae99cc" },
+  Graduation: { icon: GraduationCap, accent: "#9b88bd" },
+  Congratulations: { icon: PartyPopper, accent: "#c49451" },
+  "Festive Gifting": { icon: Sparkles, accent: "#cc9d5f" },
+  "Just Because": { icon: Flower2, accent: "#8ba684" },
+  "Any occasion": { icon: Gift, accent: "#c47765" },
+};
+
+function GiftFinderPreview({ step, answers }: { step: number; answers: [string, string, string] }) {
+  const [recipient, occasion, colour] = answers;
+  const recipientIndex = recipients.findIndex((value) => value === recipient);
+  const scene = step === 2 ? 5 : recipientIndex < 0 ? 4 : recipientIndex;
+  const person = recipientArt[recipients[recipientIndex] ?? "Anyone"];
+  const event = occasionArt[occasion as keyof typeof occasionArt] ?? occasionArt["Any occasion"];
+  const selected = answers[step];
+  const { icon: Icon, accent } =
+    step === 0
+      ? person
+      : step === 1
+        ? event
+        : {
+            icon: Flower2,
+            accent: colour && colour !== "Any colour" ? colourValue(colour) : "#b97a9a",
+          };
+
+  return (
+    <div
+      className="gift-finder-preview"
+      aria-hidden="true"
+      style={{ "--finder-accent": accent } as CSSProperties}
+    >
+      <div className="gift-finder-scene" key={step + ":" + selected}>
+        <div className="gift-finder-art" data-scene={scene} />
+        <div className="gift-finder-caption">
+          <span className="gift-finder-symbol">
+            <Icon size={20} />
+          </span>
+          {selected && <span>{selected}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   const { products } = useBloom();
   const navigate = useNavigate();
@@ -205,7 +274,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   const [answers, setAnswers] = useState<[string, string, string]>(["", "", ""]);
   const palette = [...new Set(products.flatMap(({ colors }) => colors))];
   const questions = [
-    ["Who are you gifting?", ["Partner", "Friend", "Family", "Colleague", "Anyone"]],
+    ["Who are you gifting?", recipients],
     ["What’s the occasion?", [...occasions, "Any occasion"]],
 
     ["Which colours do they love?", [...palette, "Any colour"]],
@@ -240,42 +309,63 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
         title="Find something that feels like them."
       />
       {step < 3 ? (
-        <div className="question-panel">
-          <p className="eyebrow">Question {step + 1} of 3</p>
-          <progress value={step + 1} max={3} aria-label="Gift finder progress" />
-          <h2>{questions[step]![0]}</h2>
-          <div className="choice-grid">
-            {questions[step]![1].map((value) => (
+        <div className="question-panel gift-finder-quiz">
+          <div className="gift-finder-form">
+            <ol className="gift-finder-steps" aria-label="Gift finder progress">
+              {finderSteps.map((label, index) => (
+                <li
+                  key={label}
+                  data-complete={index < step}
+                  aria-current={index === step ? "step" : undefined}
+                >
+                  <span aria-hidden="true">{index + 1}</span>
+                  {label}
+                </li>
+              ))}
+            </ol>
+            <h2 id="gift-finder-question">{questions[step]![0]}</h2>
+            <div className="choice-grid" role="group" aria-labelledby="gift-finder-question">
+              {questions[step]![1].map((value) => (
+                <button
+                  type="button"
+                  key={value}
+                  className="choice"
+                  aria-pressed={answers[step] === value}
+                  onClick={() =>
+                    setAnswers((current) => {
+                      const next: typeof current = [...current];
+                      next[step] = value;
+                      return next;
+                    })
+                  }
+                >
+                  {step === 2 && value !== "Any colour" && (
+                    <span
+                      className="swatch"
+                      aria-hidden="true"
+                      style={{ backgroundColor: colourValue(value) }}
+                    />
+                  )}
+                  {value}
+                </button>
+              ))}
+            </div>
+            <div className="button-row">
+              {step > 0 && (
+                <button className="btn btn-outline" onClick={() => setStep(step - 1)}>
+                  Back
+                </button>
+              )}
               <button
-                key={value}
-                className="choice"
-                aria-pressed={answers[step] === value}
-                onClick={() =>
-                  setAnswers((current) => {
-                    const next: typeof current = [...current];
-                    next[step] = value;
-                    return next;
-                  })
-                }
+                className="btn btn-primary"
+                disabled={!answers[step]}
+                onClick={() => setStep(step + 1)}
               >
-                {value}
+                {step === 2 ? "See matches" : "Continue"} <ArrowRight size={16} />
               </button>
-            ))}
+            </div>
           </div>
-          <div className="button-row">
-            {step > 0 && (
-              <button className="btn btn-outline" onClick={() => setStep(step - 1)}>
-                Back
-              </button>
-            )}
-            <button
-              className="btn btn-primary"
-              disabled={!answers[step]}
-              onClick={() => setStep(step + 1)}
-            >
-              {step === 2 ? "See matches" : "Continue"} <ArrowRight size={16} />
-            </button>
-          </div>
+          <GiftFinderPreview step={step} answers={answers} />
         </div>
       ) : (
         <div>

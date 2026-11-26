@@ -13,6 +13,12 @@ export const colours = {
   Plum: "#684052",
   Brown: "#6b4636",
 };
+
+export function colourValue(name: string) {
+  const colour = colours[name as keyof typeof colours];
+  return typeof colour === "string" ? colour : /^#[\da-f]{6}$/i.test(name) ? name : "#e9d1c4";
+}
+
 export const occasions = [
   "Valentine's Day",
   "Birthdays",

@@ -1212,11 +1212,136 @@ input[type="checkbox"] {
 .policy {
   max-width: 850px;
 }
-.question-panel {
-  max-width: 800px;
+.gift-finder-quiz {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  max-width: 1100px;
+  padding: 8px;
+  background: var(--paper);
+  box-shadow: 0 12px 34px #5134430d;
 }
-.question-panel h2 {
-  margin-block: 18px;
+.gift-finder-form {
+  min-width: 0;
+  align-self: center;
+  padding: clamp(16px, 2.8vw, 42px);
+}
+.gift-finder-form h2 {
+  margin-block: 20px 16px;
+  font-size: clamp(1.65rem, 3.1vw, 2.9rem);
+}
+.gift-finder-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 15px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--soft);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+.gift-finder-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.gift-finder-steps li span {
+  display: grid;
+  width: 23px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #f5ece7;
+}
+.gift-finder-steps [aria-current="step"] {
+  color: var(--plum);
+}
+.gift-finder-steps [aria-current="step"] span {
+  background: var(--plum);
+  color: var(--paper);
+}
+.gift-finder-steps [data-complete="true"] span {
+  background: #e6eddf;
+}
+.gift-finder-form .choice {
+  min-height: 44px;
+  overflow-wrap: anywhere;
+}
+.gift-finder-preview {
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 330px;
+  border-radius: 15px;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at 55% 35%,
+    #fffaf1 16%,
+    color-mix(in srgb, #f9ede4, var(--finder-accent) 24%)
+  );
+}
+.gift-finder-scene {
+  width: min(74%, 215px);
+  display: grid;
+  justify-items: center;
+  padding-block: 12px;
+}
+.gift-finder-art {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: url("./assets/gift-finder-illustrations.webp") 0 0 / 300% 200% no-repeat;
+  filter: contrast(1.14) brightness(1.09);
+  mask-image: linear-gradient(transparent, #000 7%, #000 96%, transparent);
+  mix-blend-mode: multiply;
+  animation: gift-finder-arrive 380ms ease-out;
+}
+.gift-finder-art[data-scene="1"] {
+  background-position: 50% 0;
+}
+.gift-finder-art[data-scene="2"] {
+  background-position: 100% 0;
+}
+.gift-finder-art[data-scene="3"] {
+  background-position: 0 100%;
+}
+.gift-finder-art[data-scene="4"] {
+  background-position: 50% 100%;
+}
+.gift-finder-art[data-scene="5"] {
+  background-position: 100% 100%;
+}
+.gift-finder-caption {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--plum);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.gift-finder-symbol {
+  display: grid;
+  width: 38px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff9f2;
+  border: 1px solid color-mix(in srgb, var(--finder-accent), #fff 55%);
+  color: color-mix(in srgb, var(--finder-accent), var(--plum) 55%);
+  animation: gift-finder-pop 440ms ease-out both;
+}
+@keyframes gift-finder-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+@keyframes gift-finder-pop {
+  0% {
+    transform: scale(0.78);
+  }
+  65% {
+    transform: scale(1.12);
+  }
 }
 .choice-grid {
   display: flex;
@@ -1489,6 +1614,19 @@ progress {
   }
   .quick-view > div:not([data-state]) {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .gift-finder-quiz {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gift-finder-preview {
+    grid-row: 1;
+    min-height: 0;
+  }
+  .gift-finder-scene {
+    width: min(52%, 158px);
+  }
+  .gift-finder-steps {
+    column-gap: 8px;
   }
   .bloom-nav {
     padding: 8px 9px 0;

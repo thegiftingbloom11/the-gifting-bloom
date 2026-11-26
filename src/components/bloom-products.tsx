@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { colours, type Product } from "@/lib/bloom";
+import { colourValue, type Product } from "@/lib/bloom";
 
 export function ProductImage({
   src,
@@ -78,8 +78,7 @@ export function Swatches({
   return (
     <div className="swatches">
       {values.map((name) => {
-        const value =
-          colours[name as keyof typeof colours] || (/^#[\da-f]{6}$/i.test(name) ? name : "#e9d1c4");
+        const value = colourValue(name);
         return onSelect ? (
           <button
             key={name}
