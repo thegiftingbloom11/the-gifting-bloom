@@ -1092,6 +1092,7 @@ input[type="checkbox"] {
   max-width: min(94vw, 920px);
 }
 .quick-view > h2 {
+  margin-bottom: 8px;
   padding-inline: 24px;
   text-align: center;
   overflow-wrap: anywhere;
