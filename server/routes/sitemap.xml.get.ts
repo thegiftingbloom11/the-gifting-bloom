@@ -1,26 +1,10 @@
 import { defineHandler } from "nitro";
 import { getStore } from "../../src/lib/bloom-api.server";
-import { bouquetBuilderEnabled } from "../../src/lib/bloom";
-import { getSiteOrigin } from "../utils/site-origin";
+import { indexablePaths, siteOrigin } from "../../src/lib/bloom-seo";
 
 export default defineHandler(async (event) => {
-  const origin = getSiteOrigin(event.req.url);
-  const { products } = await getStore();
-  const paths = [
-    "/",
-    "/bouquets",
-    "/mini-gifts",
-    ...(bouquetBuilderEnabled ? ["/customise"] : []),
-    "/our-story",
-    "/bloom-diaries",
-    "/gift-finder",
-    "/contact",
-    "/privacy-policy",
-    "/terms-conditions",
-    ...products
-      .filter((product) => !product.is_demo)
-      .map((product) => "/product/" + encodeURIComponent(product.slug)),
-  ];
+  const origin = siteOrigin(event.req.url);
+  const paths = indexablePaths(await getStore());
   const entries = paths
     .map(
       (path) =>

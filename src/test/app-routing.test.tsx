@@ -2,12 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { galleryRedirect, resolvePage } from "@/app";
+import { App, galleryRedirect, resolvePage } from "@/app";
 import { BloomShell } from "@/components/bloom-shell";
 import { Contact } from "@/components/bloom-content";
 import type { StoreData } from "@/lib/bloom-api";
 import { studioCollection, withStudioCollection } from "@/lib/bloom-collection";
 import { bouquetBuilderEnabled, matchesProductCategory, matchesProductColours } from "@/lib/bloom";
+import { collectionPages, indexablePaths, matchesCollection } from "@/lib/bloom-seo";
 
 const catalogue: StoreData = {
   products: studioCollection,
@@ -20,6 +21,8 @@ const catalogue: StoreData = {
 
 describe("App routing", () => {
   it("emails the prefilled gift enquiry through Web3Forms and keeps inputs on failure", async () => {
+    const events: unknown[] = [];
+    vi.stubGlobal("dataLayer", events);
     const submit = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(Response.json({ success: false }, { status: 429 }))
@@ -48,10 +51,15 @@ describe("App routing", () => {
       fireEvent.click(button);
       expect(await screen.findByRole("alert")).toHaveTextContent("Please try again");
       expect(screen.getByLabelText(/full name/i)).toHaveValue("Test Customer");
+      expect(events).toEqual([]);
 
       fireEvent.click(button);
       expect(await screen.findByRole("status")).toHaveTextContent("Your enquiry has been sent");
       expect(screen.getByLabelText(/full name/i)).toHaveValue("");
+      expect(events).toEqual([
+        expect.objectContaining({ event: "generate_lead", lead_type: "contact_form" }),
+      ]);
+      expect(JSON.stringify(events)).not.toMatch(/Test Customer|test@example.com|Flat 2/);
       const [url, request] = submit.mock.calls[1]!;
       expect(url).toBe("https://api.web3forms.com/submit");
       expect(request?.method).toBe("POST");
@@ -68,6 +76,7 @@ describe("App routing", () => {
       });
     } finally {
       submit.mockRestore();
+      vi.unstubAllGlobals();
     }
   });
 
@@ -75,6 +84,63 @@ describe("App routing", () => {
     expect(resolvePage("/", catalogue).status).toBe(200);
     expect(resolvePage("/product/pocketful-of-sun", catalogue).title).toBe("Sunflower Bouquet");
     expect(resolvePage("/admin", catalogue).noIndex).toBe(true);
+  });
+
+  it.each(collectionPages)(
+    "renders $path as a crawlable collection with product links",
+    (collection) => {
+      const product = catalogue.products.find((item) =>
+        matchesCollection(item, collection.filter),
+      )!;
+      const html = renderToStaticMarkup(
+        <MemoryRouter initialEntries={[collection.path]}>
+          <App initialStore={catalogue} requestOrigin="https://example.com" />
+        </MemoryRouter>,
+      );
+      expect(html).toContain(`href="https://example.com${collection.path}"`);
+      expect(html).toContain(`href="/product/${product.slug}"`);
+      expect(html).toContain('"@type":"BreadcrumbList"');
+    },
+  );
+
+  it("uses the same indexability and canonical paths for the sitemap and storefront", () => {
+    const product = { ...studioCollection[0]!, slug: "fleur-été" };
+    const demo = { ...product, slug: "demo", is_demo: true };
+    const store = { ...catalogue, products: [product, demo] };
+    const paths = indexablePaths(store);
+    expect(paths).toContain("/product/fleur-%C3%A9t%C3%A9");
+    expect(paths).not.toContain("/product/demo");
+    expect(paths).not.toContain("/keychains");
+    expect(paths).not.toContain("/admin");
+    for (const path of paths) {
+      const page = resolvePage(path, store);
+      expect(page.status).toBe(200);
+      expect(page.noIndex).toBeFalsy();
+      expect(page.canonicalPath).toBe(path);
+    }
+  });
+
+  it("renders real product fields in JSON-LD and canonicalizes query variants", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={["/product/pocketful-of-sun/?utm_source=demo"]}>
+        <App initialStore={catalogue} requestOrigin="https://example.com" />
+      </MemoryRouter>,
+    );
+    const json = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1];
+    expect(json).toBeDefined();
+    const product = JSON.parse(json!)["@graph"].find(
+      (item: { "@type": string }) => item["@type"] === "Product",
+    );
+    expect(product).toMatchObject({
+      name: "Sunflower Bouquet",
+      url: "https://example.com/product/pocketful-of-sun",
+    });
+    expect(product.image.every((image: string) => image.startsWith("https://example.com/"))).toBe(
+      true,
+    );
+    expect(product).not.toHaveProperty("offers");
+    expect(product).not.toHaveProperty("aggregateRating");
+    expect(html).toContain('rel="canonical" href="https://example.com/product/pocketful-of-sun"');
   });
 
   it("links to Contact without carrying the current category filter", () => {

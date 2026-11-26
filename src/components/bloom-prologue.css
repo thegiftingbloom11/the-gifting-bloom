@@ -402,7 +402,7 @@
 .prologue-opening-caption {
   opacity: var(--opening-caption, 1);
 }
-.prologue-caption h1,
+.prologue-caption .prologue-title,
 .prologue-smile-caption p,
 .story-love-caption,
 .story-gallery-reveal p {
@@ -411,7 +411,8 @@
   letter-spacing: -0.035em;
 }
 
-.prologue-caption h1 {
+.prologue-caption .prologue-title {
+  display: block;
   margin: 0 0 0.7rem;
   font-size: clamp(2.1rem, 4.6vw, 4.8rem);
   line-height: 1.1;
@@ -619,7 +620,7 @@
     width: 80%;
     text-align: center;
   }
-  .prologue-caption h1 {
+  .prologue-caption .prologue-title {
     font-size: clamp(1.6rem, 7vw, 3.1rem);
   }
   .prologue-receiving {
@@ -670,7 +671,7 @@
     width: 37%;
     text-align: start;
   }
-  .prologue-caption h1,
+  .prologue-caption .prologue-title,
   .prologue-smile-caption p {
     font-size: clamp(1.65rem, 4.1vw, 2.6rem);
   }

@@ -44,7 +44,7 @@ export function updatePrologue(prologue: HTMLElement, time: number) {
 function BouquetArt() {
   return (
     <span className="prologue-bouquet-art" aria-hidden="true">
-      <img src={bouquet} alt="" draggable={false} />
+      <img src={bouquet} alt="" fetchPriority="low" decoding="async" draggable={false} />
     </span>
   );
 }
@@ -119,6 +119,8 @@ function PhoneScreen({ logo, gifts, sunflower }: PreviewProps) {
   );
 }
 
+export const storyHeading = "Every Beautiful Gift Begins With a Thought.";
+
 export function BloomPrologue({ logo, gifts, sunflower }: PreviewProps) {
   return (
     <div className="bloom-prologue">
@@ -136,12 +138,21 @@ export function BloomPrologue({ logo, gifts, sunflower }: PreviewProps) {
           </div>
         </div>
         <div className="prologue-caption prologue-opening-caption">
-          <h1>Every Beautiful Gift Begins With a Thought.</h1>
+          <span className="prologue-title" aria-hidden="true">
+            {storyHeading}
+          </span>
           <p>A little surprise. A beautiful smile. A memory forever.</p>
         </div>
       </div>
       <div className="prologue-delivery">
-        <img className="prologue-entrance" src={entrance} alt="" draggable={false} />
+        <img
+          className="prologue-entrance"
+          src={entrance}
+          alt=""
+          fetchPriority="low"
+          decoding="async"
+          draggable={false}
+        />
         <div className="prologue-receiving">
           <div className="prologue-actor prologue-smile">
             <img className="prologue-reaction-body" src={actors} alt="" draggable={false} />

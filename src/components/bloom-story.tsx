@@ -165,8 +165,32 @@ export function BloomStory() {
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const touch = window.matchMedia("(pointer: coarse)");
     let alive = true;
+    let pending = false;
+    let timer: number | undefined;
+    function cancelScheduledLoad() {
+      window.removeEventListener("scroll", loadStage);
+      window.clearTimeout(timer);
+    }
+    function loadStage() {
+      cancelScheduledLoad();
+      if (pending || skipped.current || preference.matches) return;
+      pending = true;
+      import("./bloom-stage")
+        .then(({ default: Renderer }) => {
+          if (alive && !preference.matches && !skipped.current) setStage(() => Renderer);
+        })
+        .catch((error: unknown) => {
+          if (import.meta.env.DEV) console.warn("The 3D intro could not load.", error);
+          if (alive) noStage();
+        })
+        .finally(() => {
+          pending = false;
+        });
+    }
     function load() {
+      cancelScheduledLoad();
       if (skipped.current) return;
       if (preference.matches) {
         setStageReady(false);
@@ -174,19 +198,18 @@ export function BloomStory() {
         return;
       }
       setDisabled(false);
-      import("./bloom-stage")
-        .then(({ default: Renderer }) => {
-          if (alive) setStage(() => Renderer);
-        })
-        .catch((error: unknown) => {
-          if (import.meta.env.DEV) console.warn("The 3D intro could not load.", error);
-          if (alive) noStage();
-        });
+      if (touch.matches) {
+        window.addEventListener("scroll", loadStage, { once: true, passive: true });
+        timer = window.setTimeout(loadStage, 1500);
+      } else {
+        loadStage();
+      }
     }
     load();
     preference.addEventListener("change", load);
     return () => {
       alive = false;
+      cancelScheduledLoad();
       preference.removeEventListener("change", load);
     };
   }, [noStage]);
@@ -251,6 +274,7 @@ export function BloomStory() {
     }
 
     function requestTick() {
+      if (time === storyEnd && window.scrollY >= start + distance) return;
       if (!frame) frame = requestAnimationFrame(tick);
     }
 
@@ -293,10 +317,16 @@ export function BloomStory() {
         data-stage-ready={stageReady ? "" : undefined}
         aria-label="The Gifting Bloom love story"
       >
-        <img className="story-garden" src={gardenBackdrop} alt="" decoding="async" />
+        <img
+          className="story-garden"
+          src={gardenBackdrop}
+          alt=""
+          decoding="async"
+          fetchPriority="low"
+        />
         <picture className="story-heart-aura">
           <source media="(max-aspect-ratio: 4/5)" srcSet={mobileHeartAura} />
-          <img src={heartAura} alt="" decoding="async" />
+          <img src={heartAura} alt="" decoding="async" fetchPriority="low" />
         </picture>
         <div className="story-grain" aria-hidden="true" />
         <BloomPrologue logo={settings["logo"]} gifts={previewGifts} sunflower={sunflower} />

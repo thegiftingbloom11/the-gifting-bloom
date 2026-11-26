@@ -24,10 +24,12 @@ export default {
       const headers = { "Content-Type": "text/html; charset=utf-8" };
       if (request.method === "HEAD") return new Response(null, { status, headers });
       const assets = clientAssets.merge(serverAssets);
+      // The production client CSS already includes the styles imported by the SSR entry.
+      const css = import.meta.env.PROD && clientAssets.css.length ? clientAssets.css : assets.css;
       const data = {
         store,
         requestOrigin: url.origin,
-        assets: { entry: assets.entry, css: assets.css, js: assets.js },
+        assets: { entry: assets.entry, css, js: assets.js },
       };
       const body = await renderToReadableStream(
         <BloomDocument data={data}>

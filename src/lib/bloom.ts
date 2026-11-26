@@ -72,7 +72,11 @@ export type Product = Omit<
   | "price_cents"
   | "stock_count"
 > &
-  ProductOptions & { category: string; categoryName: string };
+  ProductOptions & {
+    category: string;
+    categoryName: string;
+    imagePreview?: { src: string; originalWidth: number; large?: string };
+  };
 
 const colourShades = new Map<string, string[]>([
   ["red", ["burgundy", "maroon", "crimson", "scarlet"]],

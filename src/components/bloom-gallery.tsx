@@ -22,6 +22,7 @@ import {
   occasions,
   type Product,
 } from "@/lib/bloom";
+import { collectionForCategory, matchesCollection, type CollectionPage } from "@/lib/bloom-seo";
 import anniversaryWallpaper from "@/assets/gift-finder-anniversary-wallpaper.jpg";
 import anyOccasionWallpaper from "@/assets/gift-finder-any-occasion-wallpaper.jpg";
 import birthdayWallpaper from "@/assets/gift-finder-birthday-wallpaper.jpg";
@@ -41,18 +42,19 @@ import {
 } from "./bloom-products";
 
 export function Gallery({
-  category,
+  collection,
   initialOccasion = "",
   initialCategory = "",
   embedded = false,
 }: {
-  category?: string;
+  collection?: CollectionPage;
   initialOccasion?: string;
   initialCategory?: string;
   embedded?: boolean;
 }) {
   const { products, categories, settings } = useBloom();
   const navigate = useNavigate();
+  const category = collection?.filter;
   const currentCategory = categories.find(({ slug }) => slug === category);
   const categoryImage = currentCategory && settings["category-image:" + currentCategory.id];
   const filterCategory = category || initialCategory;
@@ -75,7 +77,9 @@ export function Gallery({
   }
   const matches = products.filter(
     (item) =>
-      matchesProductCategory(item.category, filterCategory) &&
+      (collection
+        ? matchesCollection(item, collection.filter)
+        : matchesProductCategory(item.category, filterCategory)) &&
       (!initialOccasion || item.occasions.includes(initialOccasion)),
   );
   const Container = embedded ? "section" : "main";
@@ -90,16 +94,16 @@ export function Gallery({
         as={embedded ? "h2" : "h1"}
         label="The collection"
         title={
-          category === "bouquets"
-            ? "Handmade Bouquets"
-            : category === "mini-gifts"
-              ? "Little gifts, big feelings."
-              : "Find a bloom to give."
+          category === "mini-gifts"
+            ? "Little gifts, big feelings."
+            : collection?.name || "Find a bloom to give."
         }
       >
         {category === "mini-gifts"
           ? "Small keepsakes for the people who make your days brighter."
-          : "Handmade flowers and thoughtful keepsakes for the moments you want to hold on to."}
+          : collection && category !== "bouquets"
+            ? collection.description
+            : "Handmade flowers and thoughtful keepsakes for the moments you want to hold on to."}
       </PageHeading>
       {categoryImage && (
         <div className="category-banner">
@@ -150,7 +154,12 @@ export function Gallery({
         {matches.length} {matches.length === 1 ? "gift" : "gifts"}
       </p>
       {matches.length ? (
-        <ProductGrid items={matches} embedded={embedded} />
+        <ProductGrid
+          items={matches}
+          embedded={embedded}
+          listId={filterCategory || "gallery"}
+          prioritizeFirst={!embedded}
+        />
       ) : (
         <div className="empty">
           <h2>{products.length ? "No gifts match this selection." : "No gifts available."}</h2>
@@ -167,6 +176,7 @@ export function Gallery({
 
 export function Detail({ product }: { product: Product }) {
   const store = useBloom();
+  const collection = collectionForCategory(product.category);
   const related = store.products
     .filter((item) => item.id !== product.id && item.category === product.category)
     .slice(0, 4);
@@ -179,7 +189,13 @@ export function Detail({ product }: { product: Product }) {
         <Link to="/" hash="collection">
           Gallery
         </Link>{" "}
-        / {product.categoryName} / {product.name}
+        /{" "}
+        {collection ? (
+          <Link to={collection.path}>{product.categoryName}</Link>
+        ) : (
+          product.categoryName
+        )}{" "}
+        / {product.name}
       </p>
       <div className="detail-layout">
         <div>
@@ -221,7 +237,7 @@ export function Detail({ product }: { product: Product }) {
       {!!related.length && (
         <section className="section-space">
           <h2>You might also like</h2>
-          <ProductGrid items={related} />
+          <ProductGrid items={related} listId="related_gifts" />
         </section>
       )}
     </main>
@@ -501,7 +517,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
                 {matches.length} {matches.length === 1 ? "gift" : "gifts"}
                 {!anyColour && ` in ${selectedColour}`}
               </p>
-              <ProductGrid items={matches} embedded={embedded} />
+              <ProductGrid items={matches} embedded={embedded} listId="gift_finder" />
             </>
           ) : (
             <p>

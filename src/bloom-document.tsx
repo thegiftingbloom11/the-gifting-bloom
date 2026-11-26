@@ -34,7 +34,6 @@ export function BloomDocument({
           }}
         />
         <meta name="author" content="The Gifting Bloom" />
-        <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="icon" href="/favicon.ico" sizes="32x32 48x48 64x64" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
@@ -60,6 +59,9 @@ export function BloomDocument({
         ))}
       </head>
       <body>
+        <noscript>
+          <style>{`.bloom-story-track { height: 100svh }`}</style>
+        </noscript>
         <div id="app">{children}</div>
         <script
           id="bloom-data"

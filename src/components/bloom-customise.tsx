@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { colours, describeCustom, occasions, whatsapp, type Custom } from "@/lib/bloom";
 import { sendEnquiry } from "@/lib/bloom-api";
+import { trackBloomEvent } from "@/lib/bloom-analytics";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductImage, Swatches } from "./bloom-products";
 import { ChenilleFlower } from "./bloom-story";
@@ -51,6 +52,7 @@ export function Customise({ embedded = false }: { embedded?: boolean } = {}) {
         },
       });
       setSent(true);
+      trackBloomEvent("generate_lead", { lead_type: "bouquet_design" });
     } catch {
       setError("We couldn’t save your request. Check your contact details and try again.");
     } finally {
@@ -201,7 +203,13 @@ export function Customise({ embedded = false }: { embedded?: boolean } = {}) {
             ) : (
               <>
                 {chat && (
-                  <a className="btn btn-outline" href={chat} target="_blank" rel="noreferrer">
+                  <a
+                    className="btn btn-outline"
+                    href={chat}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => trackBloomEvent("contact_click", { contact_method: "whatsapp" })}
+                  >
                     Ask on WhatsApp
                   </a>
                 )}

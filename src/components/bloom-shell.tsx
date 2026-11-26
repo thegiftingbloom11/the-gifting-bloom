@@ -28,6 +28,7 @@ import {
   whatsapp,
 } from "@/lib/bloom";
 import type { StoreData } from "@/lib/bloom-api";
+import { trackBloomEvent } from "@/lib/bloom-analytics";
 import { BloomLogo } from "./bloom-logo";
 
 const StoreContext = createContext<(StoreData & { refreshStore: () => Promise<void> }) | null>(
@@ -161,13 +162,23 @@ export function BloomShell({
                 <h2>
                   <Phone size={17} aria-hidden="true" /> Contact number
                 </h2>
-                <a href={`tel:+${businessWhatsAppNumber}`}>+91 87679 80311</a>
+                <a
+                  href={`tel:+${businessWhatsAppNumber}`}
+                  onClick={() => trackBloomEvent("contact_click", { contact_method: "phone" })}
+                >
+                  +91 87679 80311
+                </a>
               </div>
               <div className="footer-contact">
                 <h2>
                   <Mail size={17} aria-hidden="true" /> Email
                 </h2>
-                <a href={`mailto:${email}`}>{email}</a>
+                <a
+                  href={`mailto:${email}`}
+                  onClick={() => trackBloomEvent("contact_click", { contact_method: "email" })}
+                >
+                  {email}
+                </a>
               </div>
             </div>
             <div className="wrap footer-bottom">
@@ -184,6 +195,7 @@ export function BloomShell({
               title="Chat on WhatsApp"
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackBloomEvent("contact_click", { contact_method: "whatsapp" })}
             >
               <WhatsAppIcon />
             </a>

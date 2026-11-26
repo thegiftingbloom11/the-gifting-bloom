@@ -1,4 +1,4 @@
-import { Link } from "./bloom-navigation";
+import { Link, useNavigate } from "./bloom-navigation";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
@@ -12,6 +12,8 @@ import {
   instagram,
   whatsapp,
 } from "@/lib/bloom";
+import { collectionForCategory } from "@/lib/bloom-seo";
+import { trackBloomEvent } from "@/lib/bloom-analytics";
 import diaryLavender from "@/assets/collection/lavender-bouquet.jpg";
 import diaryMixedFlowers from "@/assets/collection/mixed-flower-bouquet.jpg";
 import diarySunflowers from "@/assets/collection/sunflower-dashboard-pot.jpg";
@@ -19,6 +21,7 @@ import storyWrapping from "@/assets/story-bouquet-illustration.webp";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductImage, ProductPreview } from "./bloom-products";
 import { BloomStory } from "./bloom-story";
+import { storyHeading } from "./bloom-prologue";
 import { GiftFinder, Gallery } from "./bloom-gallery";
 import { Customise } from "./bloom-customise";
 import { BloomLogo } from "./bloom-logo";
@@ -34,6 +37,7 @@ const featuredCategories = [
 ] as const;
 export function Home({ occasion, category }: { occasion: string; category: string }) {
   const { products, reviews, reels, settings } = useBloom();
+  const navigate = useNavigate();
   const [search] = useSearchParams();
   const giftSlug = search.get("gift");
   const gift = giftSlug ? products.find((product) => product.slug === giftSlug) : undefined;
@@ -44,6 +48,7 @@ export function Home({ occasion, category }: { occasion: string; category: strin
   )?.[1];
   return (
     <main className="single-page" id="home">
+      <h1 className="sr-only">{storyHeading}</h1>
       <BloomStory />
       <section className="category-section home-section" id="gift-gallery" tabIndex={-1}>
         <div className="wrap">
@@ -59,11 +64,23 @@ export function Home({ occasion, category }: { occasion: string; category: strin
           <div className="feeling-grid">
             {featuredCategories.map((slug) => {
               const product = products.find((item) => item.category === slug && item.image_url);
+              const collection = collectionForCategory(slug)!;
               return (
                 <Link
-                  to="/"
-                  hash="collection"
-                  search={{ category: slug }}
+                  to={collection.path}
+                  onClick={(event) => {
+                    if (
+                      event.defaultPrevented ||
+                      event.button !== 0 ||
+                      event.metaKey ||
+                      event.altKey ||
+                      event.ctrlKey ||
+                      event.shiftKey
+                    )
+                      return;
+                    event.preventDefault();
+                    void navigate({ to: "/", hash: "collection", search: { category: slug } });
+                  }}
                   key={slug}
                   className="feeling-card"
                 >
@@ -385,6 +402,7 @@ export function Contact({
       if (!response.ok || result?.success !== true) throw new Error("Enquiry submission failed");
       element.reset();
       setSent(true);
+      trackBloomEvent("generate_lead", { lead_type: "contact_form" });
     } catch {
       setError("We couldn’t send your enquiry. Please try again or contact us directly.");
     } finally {
@@ -518,7 +536,13 @@ export function Contact({
           <h2>Message us directly</h2>
           <div className="contact-links">
             {chat && (
-              <a className="contact-social-whatsapp" href={chat} target="_blank" rel="noreferrer">
+              <a
+                className="contact-social-whatsapp"
+                href={chat}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => trackBloomEvent("contact_click", { contact_method: "whatsapp" })}
+              >
                 <span className="contact-social-mark" aria-hidden="true" />
                 <span>WhatsApp</span>
                 <ArrowUpRight size={15} aria-hidden="true" />

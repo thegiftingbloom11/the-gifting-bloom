@@ -8,7 +8,20 @@ import { BloomLogo } from "@/components/bloom-logo";
 import { Link, RouteScroll } from "@/components/bloom-navigation";
 import { BloomShell } from "@/components/bloom-shell";
 import { getStore, type StoreData } from "@/lib/bloom-api";
-import { bouquetBuilderEnabled } from "@/lib/bloom";
+import { usePageAnalytics } from "@/lib/bloom-analytics";
+import { bouquetBuilderEnabled, type Product } from "@/lib/bloom";
+import {
+  collectionPages,
+  hasPublishedProducts,
+  homeSeo,
+  productDescription,
+  productPath,
+  publicPageSeo,
+  siteName,
+  siteOrigin,
+  structuredData,
+  webUrl,
+} from "@/lib/bloom-seo";
 
 const AdminLogin = lazy(() =>
   import("@/components/bloom-admin").then((module) => ({ default: module.AdminLogin })),
@@ -17,52 +30,17 @@ const AdminDashboard = lazy(() =>
   import("@/components/bloom-admin").then((module) => ({ default: module.AdminDashboard })),
 );
 
-const pages: Record<string, { title: string; description: string; view: () => ReactNode }> = {
-  "/bouquets": {
-    title: "Handmade bouquets",
-    description: "Explore our handmade flower designs.",
-    view: () => <Gallery category="bouquets" />,
-  },
-  "/mini-gifts": {
-    title: "Mini gifts",
-    description: "Explore little handmade keepsakes.",
-    view: () => <Gallery category="mini-gifts" />,
-  },
-  "/customise": {
-    title: "Design a bouquet",
-    description: "Preview a bouquet with your choice of flowers and wrapping.",
-    view: () => <Customise />,
-  },
-  "/our-story": {
-    title: "Our story",
-    description: "Meet The Gifting Bloom and discover how our gifts are made.",
-    view: () => <OurStory />,
-  },
-  "/bloom-diaries": {
-    title: "Bloom Diaries",
-    description: "Instagram posts and moments from The Gifting Bloom.",
-    view: () => <Diaries />,
-  },
-  "/gift-finder": {
-    title: "Gift finder",
-    description: "Find a handmade gift by occasion and colour.",
-    view: () => <GiftFinder />,
-  },
-  "/contact": {
-    title: "Contact",
-    description: "Get in touch about a handmade gift or bouquet design.",
-    view: () => <Contact />,
-  },
-  "/privacy-policy": {
-    title: "Privacy policy",
-    description: "How The Gifting Bloom handles enquiry details.",
-    view: () => <Policy type="privacy" />,
-  },
-  "/terms-conditions": {
-    title: "Website terms",
-    description: "Terms for The Gifting Bloom website.",
-    view: () => <Policy type="terms" />,
-  },
+const publicViews: Record<keyof typeof publicPageSeo, () => ReactNode> = {
+  "/customise": () => <Customise />,
+  "/our-story": () => <OurStory />,
+  "/bloom-diaries": () => <Diaries />,
+  "/gift-finder": () => <GiftFinder />,
+  "/contact": () => <Contact />,
+  "/privacy-policy": () => <Policy type="privacy" />,
+  "/terms-conditions": () => <Policy type="terms" />,
+};
+
+const ownerPages: Record<string, { title: string; description: string; view: () => ReactNode }> = {
   "/admin": {
     title: "Owner dashboard",
     description: "Manage the gallery and enquiries.",
@@ -73,11 +51,6 @@ const pages: Record<string, { title: string; description: string; view: () => Re
     description: "Sign in to manage The Gifting Bloom website.",
     view: () => <AdminLogin />,
   },
-};
-
-const home = {
-  title: "Handmade gifts and bouquets",
-  description: "Handmade bouquets, little keepsakes and personalised gifts from The Gifting Bloom.",
 };
 
 export function galleryRedirect(url: URL) {
@@ -92,41 +65,60 @@ export function resolvePage(
 ): {
   title: string;
   description: string;
-  image?: string;
+  canonicalPath?: string;
+  product?: Product;
+  breadcrumbName?: string;
   noIndex?: boolean;
-  structuredData?: string;
   status: number;
   view?: (() => ReactNode) | undefined;
 } {
   const pathname = path.replace(/\/+$/, "") || "/";
-  const slug = matchPath("/product/:slug", pathname)?.params["slug"];
+  let slug: string | undefined;
+  if (matchPath("/product/:slug", pathname)) {
+    try {
+      slug = decodeURIComponent(pathname.slice("/product/".length));
+    } catch {
+      // A malformed escape is treated as an unknown product URL.
+    }
+  }
   const product = slug && store.products.find((item) => item.slug === slug);
   if (product)
     return {
       title: product.name,
-      description: product.seo || product.description || product.name,
-      image: product.image_url,
+      description: productDescription(product),
+      canonicalPath: productPath(product),
+      product,
       noIndex: product.is_demo,
-      ...(product.is_demo
-        ? {}
-        : {
-            structuredData: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "CreativeWork",
-              name: product.name,
-              description: product.seo || product.description || product.name,
-              image: product.image_url || undefined,
-            }).replace(/</g, "\\u003c"),
-          }),
       status: 200,
       view: () => <Detail key={product.id} product={product} />,
     };
-  if (pathname === "/") return { ...home, status: 200, view: undefined };
-  if (pathname === "/customise" && !bouquetBuilderEnabled) {
-    return { ...pages["/contact"]!, noIndex: true, status: 200 };
+  if (pathname === "/") return { ...homeSeo, canonicalPath: "/", status: 200 };
+  const collection = collectionPages.find(({ path }) => path === pathname);
+  if (collection) {
+    return {
+      title: collection.title,
+      description: collection.description,
+      breadcrumbName: collection.name,
+      canonicalPath: collection.path,
+      noIndex: !hasPublishedProducts(store.products, collection.filter),
+      status: 200,
+      view: () => <Gallery collection={collection} />,
+    };
   }
-  if (Object.hasOwn(pages, pathname)) {
-    return { ...pages[pathname]!, noIndex: pathname.startsWith("/admin"), status: 200 };
+  if (pathname === "/customise" && !bouquetBuilderEnabled) {
+    return {
+      ...publicPageSeo["/contact"],
+      view: publicViews["/contact"],
+      noIndex: true,
+      status: 200,
+    };
+  }
+  if (Object.hasOwn(publicViews, pathname)) {
+    const key = pathname as keyof typeof publicViews;
+    return { ...publicPageSeo[key], view: publicViews[key], canonicalPath: key, status: 200 };
+  }
+  if (Object.hasOwn(ownerPages, pathname)) {
+    return { ...ownerPages[pathname]!, noIndex: true, status: 200 };
   }
   return {
     title: "Page not found",
@@ -148,15 +140,6 @@ export function resolvePage(
   };
 }
 
-function webUrl(value: string, base?: string) {
-  try {
-    const url = new URL(value, base);
-    return url.protocol === "https:" || url.protocol === "http:" ? url : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 export function App({
   initialStore,
   requestOrigin,
@@ -169,6 +152,10 @@ export function App({
   const location = useLocation();
   const pathname = location.pathname.replace(/\/+$/, "") || "/";
   const search = new URLSearchParams(location.search);
+  const page = resolvePage(pathname, store);
+  const title = page.title + " | " + siteName;
+  const canonicalPath = page.noIndex ? undefined : page.canonicalPath;
+  usePageAnalytics(canonicalPath, title, page.product);
   if (pathname === "/shop")
     return (
       <Navigate
@@ -176,22 +163,30 @@ export function App({
         replace
       />
     );
-  const page = resolvePage(pathname, store);
-  const title = page.title + " | The Gifting Bloom";
-  const configuredOrigin = import.meta.env["VITE_SITE_URL"];
-  const canonicalOrigin = configuredOrigin && webUrl(configuredOrigin)?.origin;
-  const origin = canonicalOrigin || requestOrigin;
-  const productPreview = page.image && webUrl(page.image, origin)?.href;
+  const origin = siteOrigin(requestOrigin);
+  const productPreview = page.product?.image_url && webUrl(page.product.image_url, origin)?.href;
   const previewImage = productPreview || new URL("/the-gifting-bloom-preview.jpg", origin).href;
-  const previewAlt = productPreview ? page.title : "The Gifting Bloom logo";
+  const previewAlt = productPreview
+    ? page.product?.image_alt?.trim() || page.title
+    : "The Gifting Bloom logo";
+  const schema =
+    canonicalPath &&
+    structuredData({
+      origin,
+      path: canonicalPath,
+      name: page.breadcrumbName || page.title,
+      store,
+      ...(page.product && { product: page.product }),
+    });
   return (
     <BloomShell store={store} refreshStore={refreshStore}>
       <title>{title}</title>
       <meta name="description" content={page.description} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={page.description} />
-      <meta property="og:site_name" content="The Gifting Bloom" />
-      <meta property="og:url" content={origin + pathname} />
+      <meta property="og:site_name" content={siteName} />
+      <meta property="og:type" content={page.product ? "product" : "website"} />
+      <meta property="og:url" content={origin + (canonicalPath || pathname)} />
       <meta property="og:image" content={previewImage} />
       {!productPreview && (
         <>
@@ -201,16 +196,13 @@ export function App({
         </>
       )}
       <meta property="og:image:alt" content={previewAlt} />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={page.description} />
       <meta name="twitter:image" content={previewImage} />
       <meta name="twitter:image:alt" content={previewAlt} />
       {page.noIndex && <meta name="robots" content="noindex, follow" />}
-      {page.structuredData && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: page.structuredData }}
-        />
-      )}
-      {canonicalOrigin && page.status === 200 && <link rel="canonical" href={origin + pathname} />}
+      {schema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schema }} />}
+      {canonicalPath && <link rel="canonical" href={origin + canonicalPath} />}
       <RouteScroll />
       <Suspense
         fallback={

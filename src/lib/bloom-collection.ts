@@ -58,6 +58,26 @@ import sageRoseGoldPetalDiyaHolders from "@/assets/collection/sage-rose-gold-pet
 import blueGoldPetalDiyaHolders from "@/assets/collection/blue-gold-petal-diya-holders.jpg";
 import roseLavenderGoldPetalDiyaHolders from "@/assets/collection/rose-lavender-gold-petal-diya-holders.jpg";
 import shubhLabhHangingsAngle from "@/assets/collection/shubh-labh-hangings-angle.jpg";
+import flowerDiyaHoldersPreview from "@/assets/collection/flower-diya-holders-640.jpg";
+import flowerDiyaHoldersLarge from "@/assets/collection/flower-diya-holders-1280.jpg";
+import magentaLimeGoldPreview from "@/assets/collection/magenta-lime-gold-diya-holders-640.jpg";
+import roseLavenderGoldPreview from "@/assets/collection/rose-lavender-gold-petal-diya-holders-640.jpg";
+import lavenderGoldPreview from "@/assets/collection/lavender-gold-petal-diya-holders-640.jpg";
+import singleSunflowerPreview from "@/assets/collection/single-sunflower-640.jpg";
+import sageRoseGoldPreview from "@/assets/collection/sage-rose-gold-petal-diya-holders-640.jpg";
+
+const imagePreviews: Record<string, NonNullable<Product["imagePreview"]>> = {
+  [flowerDiyaHolders]: {
+    src: flowerDiyaHoldersPreview,
+    originalWidth: 3023,
+    large: flowerDiyaHoldersLarge,
+  },
+  [magentaLimeGoldDiyaHolders]: { src: magentaLimeGoldPreview, originalWidth: 1280 },
+  [roseLavenderGoldPetalDiyaHolders]: { src: roseLavenderGoldPreview, originalWidth: 1280 },
+  [lavenderGoldPetalDiyaHolders]: { src: lavenderGoldPreview, originalWidth: 1280 },
+  [singleSunflower]: { src: singleSunflowerPreview, originalWidth: 806 },
+  [sageRoseGoldPetalDiyaHolders]: { src: sageRoseGoldPreview, originalWidth: 1280 },
+};
 
 function studioProduct(
   photo: string,
@@ -78,6 +98,7 @@ function studioProduct(
     colors,
     description,
     image_url: photo,
+    ...(imagePreviews[photo] && { imagePreview: imagePreviews[photo] }),
     image_alt: description,
     is_demo: false,
     occasions: giftOccasions,
