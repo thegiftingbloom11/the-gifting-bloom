@@ -40,6 +40,20 @@ describe("App routing", () => {
     expect(result[0]).toEqual(cloudEdit);
   });
 
+  it("shows studio alternate photos when the live product has no gallery of its own", () => {
+    const product = studioCollection.find(({ slug }) => slug === "lavender-letter")!;
+    const liveProduct = { ...product, id: "cloud-lavender", images: [] };
+    const liveGallery = { ...liveProduct, images: ["https://example.com/lavender-detail.jpg"] };
+    const findProduct = (catalogue: typeof studioCollection) =>
+      catalogue.find(({ slug }) => slug === product.slug);
+
+    expect(findProduct(withStudioCollection([liveProduct]))).toEqual({
+      ...liveProduct,
+      images: product.images,
+    });
+    expect(findProduct(withStudioCollection([liveGallery]))).toEqual(liveGallery);
+  });
+
   it("redirects the legacy gallery URL with its occasion filter", () => {
     expect(galleryRedirect(new URL("https://example.com/shop?occasion=Just%20Because"))).toBe(
       "/?occasion=Just+Because#collection",

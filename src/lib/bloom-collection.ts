@@ -561,7 +561,12 @@ export const studioCollection = [
 export function withStudioCollection(cloudProducts: Product[]) {
   const collection = new Map(studioCollection.map((item) => [item.slug, item]));
   for (const item of cloudProducts) {
-    if (!item.is_demo) collection.set(item.slug, item);
+    if (item.is_demo) continue;
+    const studioPhotos = collection.get(item.slug)?.images;
+    collection.set(
+      item.slug,
+      item.images.length || !studioPhotos?.length ? item : { ...item, images: studioPhotos },
+    );
   }
   return [...collection.values()];
 }

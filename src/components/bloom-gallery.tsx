@@ -3,7 +3,13 @@ import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { matchesProductCategory, occasions, type Product } from "@/lib/bloom";
 import { useBloom } from "./bloom-shell";
-import { PageHeading, ProductGrid, ProductImage, GiftDetails } from "./bloom-products";
+import {
+  PageHeading,
+  ProductGrid,
+  ProductImage,
+  ProductPhotos,
+  GiftDetails,
+} from "./bloom-products";
 
 export function Gallery({
   category,
@@ -132,8 +138,6 @@ export function Gallery({
 
 export function Detail({ product }: { product: Product }) {
   const store = useBloom();
-  const [active, setActive] = useState(0);
-  const gallery = [...new Set([product.image_url, ...product.images].filter(Boolean))];
   const related = store.products
     .filter((item) => item.id !== product.id && item.category === product.category)
     .slice(0, 4);
@@ -150,24 +154,7 @@ export function Detail({ product }: { product: Product }) {
       </p>
       <div className="detail-layout">
         <div>
-          <div className="detail-image">
-            <ProductImage src={gallery[active]} alt={product.image_alt || product.name} eager />
-          </div>
-          {gallery.length > 1 && (
-            <div className="gallery-thumbs">
-              {gallery.map((url, index) => (
-                <button
-                  type="button"
-                  aria-label={"View photo " + (index + 1)}
-                  aria-pressed={active === index}
-                  key={url}
-                  onClick={() => setActive(index)}
-                >
-                  <ProductImage src={url} alt="" />
-                </button>
-              ))}
-            </div>
-          )}
+          <ProductPhotos key={product.id} product={product} detail />
           {product.video && (
             <video
               className="product-video"

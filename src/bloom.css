@@ -1060,11 +1060,12 @@ input[type="checkbox"] {
   margin-top: 10px;
 }
 .gallery-thumbs button {
-  width: 63px;
-  height: 63px;
+  width: clamp(64px, 14vw, 80px);
+  aspect-ratio: 1;
   overflow: hidden;
   border-radius: 8px;
-  border: 2px solid transparent;
+  border: 2px solid var(--rule);
+  background: var(--paper);
 }
 .gallery-thumbs button[aria-pressed="true"] {
   border-color: var(--rose);
@@ -1102,7 +1103,10 @@ input[type="checkbox"] {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 18px;
 }
-.quick-view-photos > img {
+.quick-view-photos .gallery-thumbs {
+  justify-content: center;
+}
+.quick-view-photo > img {
   display: block;
   width: auto;
   height: auto;

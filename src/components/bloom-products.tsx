@@ -37,6 +37,35 @@ export function ProductImage({
   );
 }
 
+export function ProductPhotos({ product, detail = false }: { product: Product; detail?: boolean }) {
+  const photos = [...new Set([product.image_url, ...product.images].filter(Boolean))];
+  const [selected, selectPhoto] = useState<string>();
+  const active = selected && photos.includes(selected) ? selected : photos[0];
+
+  return (
+    <>
+      <div className={detail ? "detail-image" : "quick-view-photo"}>
+        <ProductImage src={active} alt={product.image_alt || product.name} eager={detail} />
+      </div>
+      {photos.length > 1 && (
+        <div className="gallery-thumbs" role="group" aria-label="Product photos">
+          {photos.map((photo, index) => (
+            <button
+              key={photo}
+              type="button"
+              aria-label={"View photo " + (index + 1)}
+              aria-pressed={photo === active}
+              onClick={() => selectPhoto(photo)}
+            >
+              <ProductImage src={photo} alt="" />
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 export function Swatches({
   values,
   selected,
@@ -152,29 +181,12 @@ export function ProductPreview({
   product: Product;
   embedded?: boolean;
 }) {
-  const gallery = [...new Set([product.image_url, ...product.images].filter(Boolean))];
-  const [photo, selectPhoto] = useState(0);
   return (
     <DialogContent className="bloom-dialog quick-view">
       <DialogTitle>{product.name}</DialogTitle>
       <div>
         <div className="quick-view-photos">
-          <ProductImage src={gallery[photo]} alt={product.image_alt || product.name} />
-          {gallery.length > 1 && (
-            <div className="gallery-thumbs">
-              {gallery.map((image, index) => (
-                <button
-                  key={image}
-                  type="button"
-                  aria-label={"View photo " + (index + 1)}
-                  aria-pressed={index === photo}
-                  onClick={() => selectPhoto(index)}
-                >
-                  <ProductImage src={image} alt="" />
-                </button>
-              ))}
-            </div>
-          )}
+          <ProductPhotos product={product} />
           {embedded && product.video && (
             <video
               className="product-video"
