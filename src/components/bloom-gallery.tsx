@@ -77,6 +77,7 @@ export function Gallery({
   return (
     <Container
       id={embedded ? "collection" : undefined}
+      data-category={category || filterCategory || undefined}
       className={embedded ? "wrap home-section" : "wrap inner-page"}
     >
       <PageHeading

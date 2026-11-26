@@ -27,38 +27,40 @@ export function Home({ occasion, category }: { occasion: string; category: strin
   return (
     <main className="single-page" id="home">
       <BloomStory />
-      <section className="wrap home-section" id="gift-gallery" tabIndex={-1}>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">For the people you love</p>
-            <h2>Explore by category.</h2>
+      <section className="category-section home-section" id="gift-gallery" tabIndex={-1}>
+        <div className="wrap">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">For the people you love</p>
+              <h2>Explore by category.</h2>
+            </div>
+            <Link className="text-link" to="/" hash="gift-finder" search={true}>
+              Take the gift finder <ArrowRight size={17} />
+            </Link>
           </div>
-          <Link className="text-link" to="/" hash="gift-finder" search={true}>
-            Take the gift finder <ArrowRight size={17} />
-          </Link>
-        </div>
-        <div className="feeling-grid">
-          {featuredCategories.map((slug) => {
-            const product = products.find((item) => item.category === slug && item.image_url);
-            return (
-              <Link
-                to="/"
-                hash="collection"
-                search={{ category: slug }}
-                key={slug}
-                className="feeling-card"
-              >
-                <div className="feeling-media">
-                  <ProductImage src={product?.image_url} alt="" />
-                </div>
-                <span>
-                  {categoryNames[slug]}
-                  <ArrowUpRight size={17} />
-                </span>
-                {product?.is_demo && <small>Concept illustration</small>}
-              </Link>
-            );
-          })}
+          <div className="feeling-grid">
+            {featuredCategories.map((slug) => {
+              const product = products.find((item) => item.category === slug && item.image_url);
+              return (
+                <Link
+                  to="/"
+                  hash="collection"
+                  search={{ category: slug }}
+                  key={slug}
+                  className="feeling-card"
+                >
+                  <div className="feeling-media">
+                    <ProductImage src={product?.image_url} alt="" />
+                  </div>
+                  <span>
+                    {categoryNames[slug]}
+                    <ArrowUpRight size={17} />
+                  </span>
+                  {product?.is_demo && <small>Concept illustration</small>}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
       <div className="collection-section">
