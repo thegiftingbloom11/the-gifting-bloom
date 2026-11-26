@@ -1,4 +1,4 @@
-import { ChevronsDown, SkipForward } from "lucide-react";
+import { ChevronsDown } from "lucide-react";
 import {
   Component,
   useCallback,
@@ -300,13 +300,6 @@ export function BloomStory() {
         </picture>
         <div className="story-grain" aria-hidden="true" />
         <BloomPrologue logo={settings["logo"]} gifts={previewGifts} sunflower={sunflower} />
-        <a
-          className="intro-skip"
-          href="#gift-gallery"
-          aria-label="Skip animation and explore the gallery"
-        >
-          <SkipForward size={19} aria-hidden="true" />
-        </a>
 
         <div className="intro-art" aria-hidden="true">
           <div className="intro-glow" />
