@@ -1,10 +1,10 @@
 import { defineHandler } from "nitro";
 import { getStore } from "../../src/lib/bloom-api.server";
 import { bouquetBuilderEnabled } from "../../src/lib/bloom";
+import { getSiteOrigin } from "../utils/site-origin";
 
 export default defineHandler(async (event) => {
-  const origin =
-    import.meta.env["VITE_SITE_URL"]?.replace(/\/+$/, "") || new URL(event.req.url).origin;
+  const origin = getSiteOrigin(event.req.url);
   const { products } = await getStore();
   const paths = [
     "/",
