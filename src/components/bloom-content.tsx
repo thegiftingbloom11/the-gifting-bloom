@@ -19,6 +19,7 @@ const featuredCategories = [
   "diya-holders",
   "car-dashboard-pots",
   "flower-pot-flowers",
+  "festive-decor",
 ] as const;
 export function Home({ occasion, category }: { occasion: string; category: string }) {
   const { products, reviews, reels, settings } = useBloom();

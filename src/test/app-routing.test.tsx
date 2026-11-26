@@ -22,11 +22,13 @@ describe("App routing", () => {
 
   it("uses studio photographs and keeps existing mini gift links working", () => {
     const categories = new Set(studioCollection.map((product) => product.category));
-    expect(categories.size).toBe(6);
+    expect(categories.size).toBe(7);
     expect(studioCollection.every((product) => product.image_url && !product.is_demo)).toBe(true);
     expect(
       studioCollection.filter((product) => matchesProductCategory(product.category, "mini-gifts")),
-    ).toHaveLength(7);
+    ).toHaveLength(30);
+    const photos = studioCollection.flatMap(({ image_url, images }) => [image_url, ...images]);
+    expect(new Set(photos).size).toBe(59);
   });
 
   it("keeps live catalogue entries without duplicating studio products or returning old demos", () => {

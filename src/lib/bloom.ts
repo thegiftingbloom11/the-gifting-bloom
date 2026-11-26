@@ -11,6 +11,7 @@ export const colours = {
   Sage: "#94a687",
   Gold: "#e1a32e",
   Plum: "#684052",
+  Brown: "#6b4636",
 };
 export const occasions = [
   "Valentine's Day",
@@ -29,6 +30,7 @@ export const categoryNames = {
   "diya-holders": "Diya Holders",
   "car-dashboard-pots": "Car Dashboard Pots",
   "flower-pot-flowers": "Flower Pot Flowers",
+  "festive-decor": "Festive Decor",
   "mini-gifts": "Mini gifts",
 };
 
