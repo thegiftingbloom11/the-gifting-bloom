@@ -445,20 +445,8 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
   clip-path: inset(0 32% 0 0);
   transform: translateX(14%);
 }
-#filters {
-  scroll-margin-top: 96px;
-}
 .single-page
-  :is(
-    #gift-gallery,
-    #filters,
-    #collection,
-    #gift-finder,
-    #customise,
-    #our-story,
-    #instagram,
-    #contact
-  ) {
+  :is(#gift-gallery, #collection, #gift-finder, #customise, #our-story, #instagram, #contact) {
   scroll-margin-top: 20px;
 }
 .home-section {
@@ -955,28 +943,12 @@ button.swatch[aria-pressed="true"] {
 .instagram-profile + .reel-grid {
   margin-top: 24px;
 }
-.filters,
 .panel,
 .question-panel {
   background: #fffaf6;
   border: 1px solid var(--rule);
   border-radius: 22px;
   padding: clamp(15px, 2.35vw, 30px);
-}
-.filter-heading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 13px;
-  font-weight: 700;
-}
-.filter-heading button {
-  margin-left: auto;
-}
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1.3fr repeat(5, minmax(0, 1fr));
-  gap: 10px;
 }
 label {
   display: grid;
@@ -1004,31 +976,11 @@ label textarea::placeholder {
 label textarea {
   resize: vertical;
 }
-.search-field {
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 1px solid #dec3c8;
-  border-radius: 9px;
-  padding-left: 8px;
-}
-.search-field svg {
-  flex: none;
-  color: var(--rose);
-}
-.search-field input[type="search"] {
-  border: 0;
-  height: 42px;
-  min-height: 42px;
-}
 .checkbox-label {
   display: flex;
   align-items: center;
   min-height: 34px;
   gap: 8px;
-}
-.filters .checkbox-label {
-  margin-top: 10px;
 }
 input:is([type="checkbox"], [type="range"]),
 progress {
@@ -1499,9 +1451,6 @@ progress {
   .wrap {
     width: calc(100% - 64px);
   }
-  .filter-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 @media (max-width: 920px) {
   .desktop-menu {
@@ -1582,9 +1531,6 @@ progress {
   .reel-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .filter-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .single-page :is(input:not([type="range"]), select, textarea) {
     min-width: 0;
     font-size: 16px;
@@ -1629,11 +1575,6 @@ progress {
   }
   .admin-fields {
     grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 360px) {
-  .single-page .filter-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (prefers-reduced-motion: reduce) {

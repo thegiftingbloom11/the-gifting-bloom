@@ -101,8 +101,8 @@ export function BloomShell({
             <div className="nav-actions">
               <Link
                 to="/"
-                hash="filters"
-                aria-label="Search gifts"
+                hash="gift-finder"
+                aria-label="Find a gift"
                 className="icon-button nav-search"
               >
                 <Search size={20} />

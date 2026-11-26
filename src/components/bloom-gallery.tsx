@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "./bloom-navigation";
-import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { matchesProductCategory, occasions, type Product } from "@/lib/bloom";
 import { useBloom } from "./bloom-shell";
@@ -12,7 +12,7 @@ export function Gallery({
   embedded = false,
 }: {
   category?: string;
-  initialOccasion?: string | undefined;
+  initialOccasion?: string;
   initialCategory?: string;
   embedded?: boolean;
 }) {
@@ -20,28 +20,15 @@ export function Gallery({
   const navigate = useNavigate();
   const currentCategory = categories.find(({ slug }) => slug === category);
   const categoryImage = currentCategory && settings["category-image:" + currentCategory.id];
-  const [search, setSearch] = useState("");
-  const [localCategory, setLocalCategory] = useState("");
-  const [colour, setColour] = useState("");
-  const [localOccasion, setLocalOccasion] = useState(initialOccasion);
-
-  const [sort, setSort] = useState("");
-  const filterCategory = embedded ? initialCategory : localCategory;
-  const occasion = embedded ? initialOccasion : localOccasion;
-  function updateFilters(category: string, occasion: string) {
-    if (embedded) {
-      void navigate({
-        to: "/",
-        search: { ...(category && { category }), ...(occasion && { occasion }) },
-        hash: true,
-        resetScroll: false,
-        hashScrollIntoView: false,
-        replace: true,
-      });
-    } else {
-      setLocalCategory(category);
-      setLocalOccasion(occasion);
-    }
+  const filterCategory = category || initialCategory;
+  function selectCategory(slug: string) {
+    void navigate({
+      to: "/",
+      search: slug ? { category: slug, occasion: initialOccasion || undefined } : {},
+      hash: true,
+      resetScroll: false,
+      replace: true,
+    });
   }
   const options = new Map(
     products
@@ -51,33 +38,17 @@ export function Gallery({
   if (filterCategory === "mini-gifts") {
     options.set("mini-gifts", "Mini gifts");
   }
-  const choices = [...new Set(products.flatMap(({ colors }) => colors))].sort();
-  const matches = products
-    .filter((item) => {
-      return (
-        matchesProductCategory(item.category, category || filterCategory) &&
-        (!search ||
-          [item.name, item.description, item.categoryName].some((field) =>
-            field.toLowerCase().includes(search.trim().toLowerCase()),
-          )) &&
-        (!colour || item.colors.includes(colour)) &&
-        (!occasion || item.occasions.includes(occasion))
-      );
-    })
-    .sort((a, b) => (sort === "name" ? a.name.localeCompare(b.name) : 0));
-  const reset = () => {
-    setSearch("");
-    updateFilters("", "");
-    setColour("");
-
-    setSort("");
-  };
+  const matches = products.filter(
+    (item) =>
+      matchesProductCategory(item.category, filterCategory) &&
+      (!initialOccasion || item.occasions.includes(initialOccasion)),
+  );
   const Container = embedded ? "section" : "main";
 
   return (
     <Container
       id={embedded ? "collection" : undefined}
-      data-category={category || filterCategory || undefined}
+      data-category={filterCategory || undefined}
       className={embedded ? "wrap home-section" : "wrap inner-page"}
     >
       <PageHeading
@@ -104,8 +75,8 @@ export function Gallery({
         <div className="shop-tabs" aria-label="Gift collections">
           <button
             type="button"
-            aria-pressed={!filterCategory}
-            onClick={() => updateFilters("", occasion)}
+            aria-pressed={!filterCategory && !initialOccasion}
+            onClick={() => selectCategory("")}
           >
             All gifts
           </button>
@@ -114,7 +85,7 @@ export function Gallery({
               key={slug}
               type="button"
               aria-pressed={filterCategory === slug}
-              onClick={() => updateFilters(slug, occasion)}
+              onClick={() => selectCategory(slug)}
             >
               {name}
             </button>
@@ -140,73 +111,6 @@ export function Gallery({
           </Link>
         </div>
       )}
-      <div className="filters" id="filters">
-        <div className="filter-heading">
-          <SlidersHorizontal size={17} /> Filters{" "}
-          <button className="text-link" onClick={reset}>
-            Clear all
-          </button>
-        </div>
-        <div className="filter-grid">
-          <label>
-            Search
-            <span className="search-field">
-              <Search size={16} />
-              <input
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Find a gift"
-              />
-            </span>
-          </label>
-          {!category && (
-            <label>
-              Category
-              <select
-                value={filterCategory}
-                onChange={(event) => updateFilters(event.target.value, occasion)}
-              >
-                <option value="">All categories</option>
-                {[...options].map(([value, name]) => (
-                  <option value={value} key={value}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <label>
-            Colour
-            <select value={colour} onChange={(event) => setColour(event.target.value)}>
-              <option value="">Any colour</option>
-              {choices.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Occasion
-            <select
-              value={occasion}
-              onChange={(event) => updateFilters(filterCategory, event.target.value)}
-            >
-              <option value="">Any occasion</option>
-              {occasions.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Sort by
-            <select value={sort} onChange={(event) => setSort(event.target.value)}>
-              <option value="">Featured</option>
-
-              <option value="name">Name, A to Z</option>
-            </select>
-          </label>
-        </div>
-      </div>
       <p className="fine result-count" aria-live="polite">
         {matches.length} {matches.length === 1 ? "gift" : "gifts"}
       </p>
@@ -214,10 +118,12 @@ export function Gallery({
         <ProductGrid items={matches} embedded={embedded} />
       ) : (
         <div className="empty">
-          <h2>No blooms match these filters.</h2>
-          <button className="btn btn-outline" onClick={reset}>
-            Clear filters
-          </button>
+          <h2>{products.length ? "No gifts match this selection." : "No gifts available."}</h2>
+          {!!products.length && (
+            <Link className="btn btn-outline" to="/" hash="collection">
+              View all gifts
+            </Link>
+          )}
         </div>
       )}
     </Container>
