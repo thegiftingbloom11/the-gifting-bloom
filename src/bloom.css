@@ -481,25 +481,29 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 .feeling-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 13px;
 }
 .feeling-card {
   position: relative;
-  aspect-ratio: 4 / 5;
   overflow: hidden;
   border: 1px solid var(--rule);
   border-radius: 19px;
   background: var(--paper);
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
   box-shadow: 0 5px 14px #65384910;
 }
 .feeling-media {
+  position: relative;
+  aspect-ratio: 1;
   min-width: 0;
   min-height: 0;
   background: linear-gradient(150deg, #fff7f0, #f4e0e4);
 }
 .feeling-media :is(img, .image-fallback) {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   min-height: 0;
