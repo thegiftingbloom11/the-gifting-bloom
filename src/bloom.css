@@ -645,12 +645,13 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 }
 .product-actions {
   margin-top: auto;
+  border-top: 1px solid var(--rule);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 6px;
-  padding-top: 3px;
+  padding-top: 6px;
 }
 .product-actions :is(.product-cta, .text-link) {
   min-height: 36px;
