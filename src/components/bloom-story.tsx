@@ -14,6 +14,7 @@ import { useBloom } from "./bloom-shell";
 import type { Playhead } from "./bloom-stage";
 import { Link } from "./bloom-navigation";
 import { ease, gardenTimeAt, keepStoryBeat, storyEnd, storyTimeAtScroll } from "@/lib/bloom-timing";
+import { bouquetBuilderEnabled } from "@/lib/bloom";
 import { BloomPrologue, updatePrologue } from "./bloom-prologue";
 import "./bloom-prologue.css";
 import heartAura from "@/assets/story-heart-aura.jpg";
@@ -338,8 +339,8 @@ export function BloomStory() {
             <Link to="/" hash="collection" search={{}}>
               Explore the Gallery
             </Link>
-            <Link to="/" hash="customise" search={true}>
-              Customise Your Gift
+            <Link to="/" hash={bouquetBuilderEnabled ? "customise" : "contact"} search={true}>
+              {bouquetBuilderEnabled ? "Customise Your Gift" : "Enquire About a Custom Gift"}
             </Link>
           </div>
         </div>

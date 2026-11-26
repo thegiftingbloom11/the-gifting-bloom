@@ -8,6 +8,7 @@ import { BloomLogo } from "@/components/bloom-logo";
 import { Link, RouteScroll } from "@/components/bloom-navigation";
 import { BloomShell } from "@/components/bloom-shell";
 import { getStore, type StoreData } from "@/lib/bloom-api";
+import { bouquetBuilderEnabled } from "@/lib/bloom";
 
 const AdminLogin = lazy(() =>
   import("@/components/bloom-admin").then((module) => ({ default: module.AdminLogin })),
@@ -121,6 +122,9 @@ export function resolvePage(
       view: () => <Detail key={product.id} product={product} />,
     };
   if (pathname === "/") return { ...home, status: 200, view: undefined };
+  if (pathname === "/customise" && !bouquetBuilderEnabled) {
+    return { ...pages["/contact"]!, noIndex: true, status: 200 };
+  }
   if (Object.hasOwn(pages, pathname)) {
     return { ...pages[pathname]!, noIndex: pathname.startsWith("/admin"), status: 200 };
   }

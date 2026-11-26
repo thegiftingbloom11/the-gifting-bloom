@@ -447,6 +447,7 @@ function SettingEditor({
     banner_image: "Final banner image",
   };
   const paragraphs = {
+    contact_address: "Public business address",
     brand_story: "Brand story",
     founder_story: "Founder story",
     policy_privacy: "Privacy policy",

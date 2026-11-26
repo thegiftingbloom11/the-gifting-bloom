@@ -1,6 +1,15 @@
 import { Link } from "./bloom-navigation";
 import { useLocation } from "react-router";
-import { ArrowUpRight, Instagram, Menu, MessageCircle, Search } from "lucide-react";
+import {
+  ArrowUpRight,
+  Instagram,
+  Mail,
+  MapPin,
+  Menu,
+  MessageCircle,
+  Phone,
+  Search,
+} from "lucide-react";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import {
@@ -10,7 +19,14 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { instagram, whatsapp } from "@/lib/bloom";
+import {
+  bouquetBuilderEnabled,
+  businessAddress,
+  businessEmail,
+  businessWhatsAppNumber,
+  instagram,
+  whatsapp,
+} from "@/lib/bloom";
 import type { StoreData } from "@/lib/bloom-api";
 import { BloomLogo } from "./bloom-logo";
 
@@ -26,12 +42,22 @@ export function useBloom() {
 const links = [
   ["home", "Home"],
   ["collection", "Gallery"],
-  ["customise", "Customise"],
+  ...(bouquetBuilderEnabled ? ([["customise", "Customise"]] as const) : []),
   ["our-story", "Our Story"],
   ["instagram", "Instagram"],
   ["contact", "Contact"],
 ] as const;
 const activeSection = { exact: true, includeHash: true, includeSearch: false };
+
+export function WhatsAppIcon() {
+  return (
+    <span className="whatsapp-mark" aria-hidden="true">
+      <MessageCircle size={30} strokeWidth={1.8} />
+      <Phone size={13} strokeWidth={2.4} />
+    </span>
+  );
+}
+
 export function BloomShell({
   store,
   refreshStore,
@@ -45,10 +71,9 @@ export function BloomShell({
   const [menu, setMenu] = useState(false);
   const brand = store.settings["brand_name"] || "The Gifting Bloom";
   const social = store.settings["instagram"] || instagram;
-  const chat = whatsapp(
-    store.settings["whatsapp"],
-    "Hi " + brand + "! I'd like to ask about a gift.",
-  );
+  const address = store.settings["contact_address"]?.trim() || businessAddress;
+  const email = store.settings["contact_email"]?.trim() || businessEmail;
+  const chat = whatsapp(businessWhatsAppNumber, "Hi " + brand + "! I'd like to ask about a gift.");
 
   return (
     <StoreContext.Provider value={{ ...store, refreshStore }}>
@@ -116,7 +141,7 @@ export function BloomShell({
         <>
           <footer className="bloom-footer">
             <div className="wrap footer-grid">
-              <div>
+              <div className="footer-brand">
                 <Link to="/" className="wordmark">
                   <BloomLogo src={store.settings["logo"]} />
                   <span>{brand}</span>
@@ -126,37 +151,30 @@ export function BloomShell({
                   <Instagram size={17} /> Instagram <ArrowUpRight size={14} />
                 </a>
               </div>
-              <div>
-                <h2>Discover</h2>
-                <Link to="/" hash="collection" search={{}}>
-                  View the gallery
-                </Link>
-                <Link to="/" hash="collection" search={{ category: "mini-gifts" }}>
-                  Mini gifts
-                </Link>
-                <Link to="/" hash="gift-finder">
-                  Gift finder
-                </Link>
-                <Link to="/" hash="instagram">
-                  Bloom Diaries
-                </Link>
+              <div className="footer-contact">
+                <h2>
+                  <MapPin size={17} aria-hidden="true" /> Address
+                </h2>
+                <address className="preserve-lines">{address}</address>
               </div>
-              <div>
-                <h2>Get in touch</h2>
-                <Link to="/" hash="contact">
-                  Contact & FAQs
-                </Link>
+              <div className="footer-contact">
+                <h2>
+                  <Phone size={17} aria-hidden="true" /> Contact number
+                </h2>
+                <a href={`tel:+${businessWhatsAppNumber}`}>+91 87679 80311</a>
               </div>
-              <div>
-                <h2>Information</h2>
-                <Link to="/privacy-policy">Privacy</Link>
-                <Link to="/terms-conditions">Terms & conditions</Link>
-                <Link to="/admin/login">Owner sign-in</Link>
+              <div className="footer-contact">
+                <h2>
+                  <Mail size={17} aria-hidden="true" /> Email
+                </h2>
+                <a href={`mailto:${email}`}>{email}</a>
               </div>
             </div>
             <div className="wrap footer-bottom">
-              © {new Date().getFullYear()} {brand}
-              <span>Made by hand, gifted by heart.</span>
+              <p>
+                Copyright 2026 <Link to="/">The Gifting Bloom</Link>. All rights reserved. By{" "}
+                <a href="https://my-portfolio-eight-sage-73.vercel.app/">Vaishnavi Pawar</a>
+              </p>
             </div>
           </footer>
           {chat && (
@@ -164,10 +182,11 @@ export function BloomShell({
               className="floating-chat"
               href={chat}
               aria-label="Chat on WhatsApp"
+              title="Chat on WhatsApp"
               target="_blank"
               rel="noreferrer"
             >
-              <MessageCircle size={23} />
+              <WhatsAppIcon />
             </a>
           )}
         </>

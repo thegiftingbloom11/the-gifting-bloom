@@ -58,6 +58,7 @@ const settingsShape = {
   tagline: z.string().max(160),
   whatsapp: z.string().regex(/^$|^\+?\d{8,15}$/),
   contact_email: z.union([z.literal(""), z.email()]),
+  contact_address: z.string().trim().max(350).optional(),
   instagram: instagramUrl,
   logo: casualUrl,
   craft_image: casualUrl,
@@ -201,7 +202,11 @@ export async function saveAdmin(db: ReturnTypeOfCloud, input: unknown) {
       check(
         await db
           .from("website_settings")
-          .upsert(Object.entries(data.settings).map(([key, value]) => ({ key, value }))),
+          .upsert(
+            Object.entries(data.settings).flatMap(([key, value]) =>
+              value === undefined ? [] : [{ key, value }],
+            ),
+          ),
       );
       break;
     case "delete": {

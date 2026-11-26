@@ -307,10 +307,6 @@ body {
   background: #fff6ef;
   color: #432534;
 }
-body:has(.bloom-story[data-opening="true"]) .floating-chat {
-  visibility: hidden;
-  pointer-events: none;
-}
 .story-grain {
   position: absolute;
   inset: 0;
@@ -536,6 +532,10 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 }
 #gift-finder.home-section {
   padding-block-start: clamp(24px, 2.8vw, 42px);
+  padding-block-end: clamp(22px, 2.5vw, 38px);
+}
+#gift-finder.home-section + #our-story.home-section {
+  padding-block-start: clamp(24px, 2.8vw, 42px);
 }
 .product-grid {
   display: grid;
@@ -698,33 +698,41 @@ button.swatch[aria-pressed="true"] {
   border-radius: 110px 22px 22px 22px;
   background: #fbe9cf;
 }
+.craft-image-illustration {
+  aspect-ratio: 4 / 3;
+  border-radius: clamp(38px, 6vw, 85px) 20px 20px 20px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .craft-image-illustration img {
+    transition: transform 650ms ease;
+  }
+  .craft-image-illustration:hover img {
+    transform: scale(1.035);
+  }
+  @supports (animation-timeline: view()) {
+    .craft-image-illustration {
+      view-timeline-name: --craft-illustration;
+    }
+    .craft-image-illustration img {
+      animation: craft-illustration-reveal linear both;
+      animation-timeline: --craft-illustration;
+      animation-range: entry 0% entry 75%;
+    }
+    @keyframes craft-illustration-reveal {
+      from {
+        scale: 1.04;
+        opacity: 0.82;
+      }
+    }
+  }
+}
 .craft-copy {
-  position: relative;
   display: grid;
   justify-items: start;
   gap: 17px;
 }
-.craft-copy > svg {
-  color: var(--rose);
-}
-.craft-copy::before {
-  content: "";
-  display: block;
-  position: absolute;
-  pointer-events: none;
-  top: -25px;
-  left: -22px;
-  right: 4px;
-  height: 65px;
-  border: 1px dashed #c48f9b99;
-  border-left-color: transparent;
-  border-right-color: transparent;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  transform: rotate(-9deg);
-}
-.craft-copy .eyebrow {
-  margin: 0;
+.craft-copy h2 {
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
 }
 .custom-band {
   background: #e9eee4;
@@ -733,8 +741,7 @@ button.swatch[aria-pressed="true"] {
 .custom-band .section-heading {
   margin-bottom: 0;
 }
-.reel-grid,
-.values-grid {
+.reel-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
@@ -835,36 +842,70 @@ button.swatch[aria-pressed="true"] {
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.45fr 1fr 1fr 1fr;
-  gap: 25px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px clamp(18px, 2.5vw, 36px);
   padding-block: 44px 33px;
 }
 .footer-grid > div {
   display: grid;
   align-content: start;
   justify-items: start;
+  min-width: 0;
   gap: 8px;
+  overflow-wrap: anywhere;
 }
-.footer-grid h2 {
-  font-size: 1.65rem;
-  margin-bottom: 7px;
+.footer-grid :is(.wordmark, h2) {
+  min-height: 44px;
 }
-.footer-grid a:not(.wordmark) {
+.footer-brand .wordmark {
+  white-space: normal;
+}
+.footer-brand .wordmark .bloom-logo {
+  width: 44px;
+  height: 44px;
+}
+.footer-contact h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1.08rem;
+}
+.footer-contact h2 svg {
+  flex: none;
+  color: var(--rose);
+}
+.footer-contact address {
+  color: var(--soft);
   font-size: 0.85rem;
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+.footer-contact a:hover {
+  text-decoration: underline;
+}
+.footer-grid :is(address, p, a:not(.wordmark)) {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 .footer-grid p {
   color: var(--soft);
-  font-size: 0.85rem;
 }
 .footer-bottom {
   padding-block: 19px;
   border-top: 1px solid var(--rule);
   color: var(--soft);
   font-size: 0.75rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
+  text-align: center;
+}
+.footer-bottom p {
+  margin: 0;
+}
+.footer-bottom a {
+  color: var(--plum);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .floating-chat {
   position: fixed;
@@ -874,11 +915,24 @@ button.swatch[aria-pressed="true"] {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #546a50;
+  background: #167848;
   color: white;
   width: 53px;
   height: 53px;
   box-shadow: 0 6px 25px #263e3340;
+}
+.floating-chat:hover {
+  background: #12653d;
+}
+.whatsapp-mark {
+  display: grid;
+  place-items: center;
+}
+.whatsapp-mark > svg {
+  grid-area: 1 / 1;
+}
+.whatsapp-mark > svg:last-child {
+  translate: 0 -1px;
 }
 .inner-page {
   padding-top: clamp(108px, 10vw, 160px);
@@ -921,32 +975,98 @@ button.swatch[aria-pressed="true"] {
   color: var(--plum);
 }
 .instagram-section {
-  background: #f9e7e8;
+  background: linear-gradient(140deg, #f8ece8, #f7e4eb);
+}
+.instagram-section > .home-section {
+  padding-block: clamp(30px, 4.5vw, 68px);
 }
 .instagram-profile {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   align-items: center;
-  gap: 1rem;
+  gap: clamp(20px, 4vw, 56px);
   border: 1px solid var(--rule);
   border-radius: 24px;
-  padding: clamp(20px, 4vw, 46px);
-  background: #fff8f3;
+  padding: clamp(20px, 4vw, 50px);
+  background: radial-gradient(ellipse at 95% 95%, #f1d8e4, transparent 63%), #fff9f5;
+  box-shadow: 0 14px 36px #51344312;
+}
+.instagram-copy {
+  display: grid;
+  justify-items: start;
+  gap: 15px;
+  color: var(--soft);
+}
+.instagram-identity {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.5vw, 19px);
 }
 .instagram-profile h2 {
   font-size: clamp(1.7rem, 4vw, 3rem);
+  color: var(--ink);
 }
-.instagram-profile p {
-  color: var(--soft);
+.instagram-handle {
+  margin-top: 3px;
+  color: var(--rose);
+  font-weight: 650;
+  overflow-wrap: anywhere;
 }
-.instagram-profile > a {
-  margin-inline-start: auto;
+.instagram-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: clamp(52px, 6vw, 75px);
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background:
+    linear-gradient(#fffcf9, #fffcf9) padding-box,
+    linear-gradient(135deg, #db884c, #a74475) border-box;
 }
 .instagram-mark {
-  width: clamp(54px, 10vw, 86px);
-  height: clamp(54px, 10vw, 86px);
-  flex: none;
+  width: 86%;
+  height: 86%;
   object-fit: contain;
+}
+.instagram-cta {
+  padding-inline: clamp(14px, 2vw, 22px);
+  background: linear-gradient(110deg, #713754, #9e3764);
+  color: #fffaf7;
+  box-shadow: 0 6px 16px #9e37643d;
+}
+.instagram-cta:hover {
+  background: linear-gradient(110deg, #5e2c48, #832951);
+}
+.instagram-cta svg {
+  flex: none;
+}
+.instagram-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  padding: 8px 5%;
+}
+.instagram-photos > div {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: clamp(3px, 0.55vw, 7px) solid #fffcf9;
+  border-radius: 14px;
+  box-shadow: 0 12px 22px #51344336;
+  transform: rotate(-8deg);
+}
+.instagram-photos > div:nth-child(2) {
+  z-index: 1;
+  transform: translateY(-7px) scale(1.12);
+}
+.instagram-photos > div:nth-child(3) {
+  transform: rotate(8deg);
+}
+.instagram-photos img,
+.instagram-photos .image-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .instagram-profile + .reel-grid {
   margin-top: 24px;
@@ -1180,6 +1300,108 @@ input[type="checkbox"] {
   gap: clamp(15px, 4vw, 50px);
   align-items: start;
 }
+.contact-layout {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.85fr);
+  gap: clamp(16px, 3vw, 34px);
+}
+.contact-form-panel {
+  background: var(--paper);
+  box-shadow: 0 12px 32px #51344310;
+}
+.contact-required-note {
+  color: var(--soft);
+  font-size: 0.85rem;
+  margin-bottom: 18px;
+}
+.contact-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.contact-form label > span > span {
+  color: var(--rose);
+}
+.contact-form label small {
+  margin-left: 4px;
+  color: var(--soft);
+  font-weight: 400;
+}
+.contact-span {
+  grid-column: 1 / -1;
+}
+.contact-submit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
+.contact-channels {
+  min-width: 0;
+  padding: clamp(8px, 2vw, 28px) clamp(0px, 1vw, 14px);
+}
+.contact-channels h2 {
+  font-size: clamp(1.65rem, 2.6vw, 2.35rem);
+  margin-bottom: 12px;
+}
+.contact-links {
+  display: grid;
+}
+.contact-links a,
+.contact-links .contact-address {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--rule);
+  padding-block: 9px;
+  color: var(--plum);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.contact-links a {
+  transition: color 180ms ease;
+}
+.contact-links .contact-address {
+  font-style: normal;
+}
+.contact-links a:hover {
+  color: var(--contact-accent, var(--rose));
+}
+.contact-social-whatsapp {
+  --contact-accent: #167848;
+}
+.contact-social-instagram {
+  --contact-accent: #a03b70;
+}
+.contact-social-mark {
+  width: clamp(56px, 5vw, 68px);
+  aspect-ratio: 1;
+  background: url("./assets/contact-social-illustrations.webp") left center / 200% 100% no-repeat;
+  transition: transform 180ms ease;
+}
+.contact-social-instagram .contact-social-mark {
+  background-position: right center;
+}
+.contact-links a:hover .contact-social-mark {
+  transform: translateY(-2px) rotate(-5deg);
+}
+.contact-social-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--plum);
+  color: white;
+}
+.contact-links a > svg {
+  color: var(--contact-accent, var(--rose));
+  transition: transform 180ms ease;
+}
+.contact-links a:hover > svg {
+  transform: translate(2px, -2px);
+}
 .panel h2 {
   font-size: clamp(1.9rem, 3.2vw, 3.1rem);
   margin-bottom: 14px;
@@ -1201,17 +1423,6 @@ input[type="checkbox"] {
 }
 .panel details p {
   margin-top: 6px;
-}
-.values-grid {
-  margin-top: 18px;
-}
-.values-grid article {
-  padding: 18px;
-  border-radius: 18px;
-  background: #f9ece7;
-}
-.values-grid p {
-  margin-top: 7px;
 }
 .policy {
   max-width: 850px;
@@ -1638,6 +1849,9 @@ progress {
   }
 }
 @media (max-width: 920px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .desktop-menu {
     display: none;
   }
@@ -1657,6 +1871,13 @@ progress {
 @media (max-width: 700px) {
   .wrap {
     width: calc(100% - 36px);
+  }
+  .instagram-profile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .instagram-photos {
+    width: min(100%, 390px);
+    justify-self: center;
   }
   .quick-view > div:not([data-state]) {
     grid-template-columns: minmax(0, 1fr);
@@ -1703,25 +1924,10 @@ progress {
     flex-direction: column;
     gap: 12px;
   }
-  .footer-grid,
   .craft-layout,
   .split-page,
-  .detail-layout,
-  .values-grid {
+  .detail-layout {
     grid-template-columns: 1fr;
-  }
-  .footer-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .footer-grid > div {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .footer-grid h2 {
-    max-width: 100%;
-  }
-  .footer-grid .wordmark {
-    white-space: normal;
   }
   .craft-image {
     border-top-left-radius: 58px;
@@ -1746,6 +1952,15 @@ progress {
   }
 }
 @media (max-width: 430px) {
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer-contact h2 {
+    min-height: 0;
+  }
+  .contact-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .wrap {
     width: calc(100% - 28px);
   }
@@ -1782,10 +1997,6 @@ progress {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-  body:has(.bloom-story[data-opening="true"]) .floating-chat {
-    visibility: visible;
-    pointer-events: auto;
   }
   .bloom-story-track {
     display: none;

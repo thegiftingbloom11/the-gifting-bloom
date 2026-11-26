@@ -2,6 +2,11 @@ import type { Tables } from "@/integrations/supabase/types";
 import { z } from "zod";
 
 export const instagram = "https://www.instagram.com/the_gifting_bloom11/";
+export const businessWhatsAppNumber = "918767980311";
+export const businessAddress = "Uruli Kanchan, Pune - 412202, Maharashtra";
+export const businessEmail = "thegiftingbloom11@gmail.com";
+// Temporarily hide the bouquet builder from the storefront.
+export const bouquetBuilderEnabled = false;
 export const colours = {
   Rose: "#b84d69",
   Blush: "#e7a0b4",

@@ -1,11 +1,21 @@
 import { Link } from "./bloom-navigation";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
-import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Instagram, Mail, MapPin, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { sendEnquiry } from "@/lib/bloom-api";
-import { categoryNames, instagram, whatsapp } from "@/lib/bloom";
-import couple from "@/assets/story-couple-optimized.jpg";
+import {
+  bouquetBuilderEnabled,
+  businessAddress,
+  businessEmail,
+  businessWhatsAppNumber,
+  categoryNames,
+  instagram,
+  whatsapp,
+} from "@/lib/bloom";
+import diaryLavender from "@/assets/collection/lavender-bouquet.jpg";
+import diaryMixedFlowers from "@/assets/collection/mixed-flower-bouquet.jpg";
+import diarySunflowers from "@/assets/collection/sunflower-dashboard-pot.jpg";
+import storyWrapping from "@/assets/story-bouquet-illustration.webp";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductImage, ProductPreview } from "./bloom-products";
 import { BloomStory } from "./bloom-story";
@@ -29,6 +39,9 @@ export function Home({ occasion, category }: { occasion: string; category: strin
   const gift = giftSlug ? products.find((product) => product.slug === giftSlug) : undefined;
   const giftColour = search.get("giftColour")?.trim().slice(0, 80) ?? "";
   const profile = settings["instagram"] || instagram;
+  const instagramHandle = profile.match(
+    /^https:\/\/(?:www\.)?instagram\.com\/([\w.]+)\/?(?:[?#]|$)/i,
+  )?.[1];
   return (
     <main className="single-page" id="home">
       <BloomStory />
@@ -72,9 +85,11 @@ export function Home({ occasion, category }: { occasion: string; category: strin
         <Gallery initialOccasion={occasion} initialCategory={category} embedded />
       </div>
       <GiftFinder embedded />
-      <div className="collection-section">
-        <Customise embedded />
-      </div>
+      {bouquetBuilderEnabled && (
+        <div className="collection-section">
+          <Customise embedded />
+        </div>
+      )}
       <OurStory embedded />
       {!!reviews.length && (
         <section className="wrap home-section home-reviews">
@@ -100,14 +115,30 @@ export function Home({ occasion, category }: { occasion: string; category: strin
       <section className="instagram-section" id="instagram">
         <div className="wrap home-section">
           <div className="instagram-profile">
-            <BloomLogo src={settings["logo"]} className="instagram-mark" />
-            <div>
-              <h2>Bloom Diaries</h2>
-              <p>@the_gifting_bloom11</p>
+            <div className="instagram-copy">
+              <div className="instagram-identity">
+                <span className="instagram-avatar">
+                  <BloomLogo src={settings["logo"]} className="instagram-mark" />
+                </span>
+                <div>
+                  <h2>Bloom Diaries</h2>
+                  {instagramHandle && <p className="instagram-handle">@{instagramHandle}</p>}
+                </div>
+              </div>
+              <p>See our latest handmade blooms, gift ideas and moments from behind the scenes.</p>
+              <a className="btn instagram-cta" href={profile} target="_blank" rel="noreferrer">
+                <Instagram size={20} aria-hidden="true" />
+                Visit us on Instagram
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </a>
             </div>
-            <a className="btn btn-primary" href={profile} target="_blank" rel="noreferrer">
-              View Instagram profile <ArrowUpRight size={16} />
-            </a>
+            <div className="instagram-photos" aria-hidden="true">
+              {[diaryLavender, diaryMixedFlowers, diarySunflowers].map((photo) => (
+                <div key={photo}>
+                  <ProductImage src={photo} alt="" />
+                </div>
+              ))}
+            </div>
           </div>
           {!!reels.length && <ReelGrid embedded />}
         </div>
@@ -223,6 +254,7 @@ export function Diaries() {
 }
 export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
   const { settings } = useBloom();
+  const craftImage = settings["craft_image"];
   const Container = embedded ? "section" : "main";
   return (
     <Container
@@ -233,25 +265,27 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
         as={embedded ? "h2" : "h1"}
         label="The Gifting Bloom"
         title="Made by hand. Gifted by heart."
-      >
-        A little bloom can hold a big feeling.
-      </PageHeading>
+      />
       <div className="craft-layout">
-        <div className="craft-image">
+        <div className={craftImage ? "craft-image" : "craft-image craft-image-illustration"}>
           <ProductImage
-            src={settings["craft_image"] || couple}
+            src={craftImage || storyWrapping}
             alt={
-              settings["craft_image"]
+              craftImage
                 ? "Crafting at The Gifting Bloom"
-                : "An illustrated moment of giving a flower"
+                : "Illustration of a maker tying a ribbon around a handmade bouquet"
             }
           />
         </div>
         <div className="craft-copy">
-          <h2>{settings["story_title"] || "A gift that feels personal."}</h2>
+          <h2>{settings["story_title"] || "Let’s plan your bouquet."}</h2>
+          <p>
+            Fresh flowers naturally wilt over time. The Gifting Bloom’s handcrafted bouquets stay in
+            bloom long after the occasion, giving you a keepsake to enjoy for years.
+          </p>
           <p className="preserve-lines">
             {settings["brand_story"] ||
-              "Pick a colour that reminds you of them. Add a few words in your own voice. It’s those little choices that make a gift feel like yours to give."}
+              "Tell us the occasion, colours and wrapping you have in mind. We’ll discuss the options, pricing and availability before you decide."}
           </p>
           {settings["founder_story"] && (
             <>
@@ -259,28 +293,21 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
               <p className="preserve-lines">{settings["founder_story"]}</p>
             </>
           )}
-          <Link className="btn btn-primary" to="/" hash="customise" search={true}>
-            Build a bouquet <ArrowRight size={16} />
-          </Link>
+          <div className="button-row">
+            <Link
+              className="btn btn-primary"
+              to="/"
+              hash={bouquetBuilderEnabled ? "customise" : "contact"}
+            >
+              {bouquetBuilderEnabled ? "Build a bouquet" : "Ask about a custom bouquet"}
+              <ArrowRight size={16} />
+            </Link>
+            <Link className="text-link" to="/" hash="collection">
+              Browse the collection <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
       </div>
-      <section className="section-space">
-        <h2>From stem to keepsake</h2>
-        <div className="values-grid">
-          <article>
-            <h3>Choose the stems</h3>
-            <p>Start with the flowers and colours that suit the person you have in mind.</p>
-          </article>
-          <article>
-            <h3>Make it personal</h3>
-            <p>Pick the wrap, ribbon, and a note to go with your bouquet.</p>
-          </article>
-          <article>
-            <h3>Give a little joy</h3>
-            <p>Browse the gallery for inspiration or share your design idea with us.</p>
-          </article>
-        </div>
-      </section>
     </Container>
   );
 }
@@ -291,8 +318,8 @@ export function Contact({
   giftColour = "",
 }: { embedded?: boolean; giftName?: string; giftColour?: string } = {}) {
   const { settings } = useBloom();
-  const [pending, setPending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const address = settings["contact_address"]?.trim() || businessAddress;
+  const email = settings["contact_email"]?.trim() || businessEmail;
   const [error, setError] = useState("");
   const giftMessage = giftName
     ? `Hi! I'd like to ask about ${giftName}.`
@@ -300,29 +327,35 @@ export function Contact({
       ? `Hi! I'd like to request a gift in this colour or combination: ${giftColour}.`
       : "";
   const enquiryType = giftName ? "Gift enquiry" : giftColour ? "Custom gift enquiry" : undefined;
-  const link = whatsapp(settings["whatsapp"], giftMessage || "Hi! I have a question about a gift.");
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  const chatMessage = giftMessage || "Hi! I have a question about a gift.";
+  const chat =
+    whatsapp(settings["whatsapp"], chatMessage) ?? whatsapp(businessWhatsAppNumber, chatMessage);
+  const profile = settings["instagram"] || instagram;
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending) return;
     const form = new FormData(event.currentTarget);
-    setPending(true);
     setError("");
-    try {
-      await sendEnquiry({
-        data: {
-          customer_name: String(form.get("name")),
-          email: String(form.get("email")),
-          phone: String(form.get("phone")),
-          subject: String(form.get("subject")),
-          message: String(form.get("message")),
-        },
-      });
-      setSent(true);
-    } catch {
-      setError("Your enquiry couldn’t be saved. Please try again or message us on Instagram.");
-    } finally {
-      setPending(false);
+    const city = String(form.get("city") ?? "").trim();
+    const neededBy = String(form.get("needed-by") ?? "");
+    const enquiry = String(form.get("message") ?? "").trim();
+    if (enquiry.length < 5) {
+      setError("Please tell us a little more about your enquiry.");
+      return;
     }
+    const details = [
+      `Name: ${String(form.get("name") ?? "").trim()}`,
+      `Email: ${form.get("email")}`,
+      `Phone: ${form.get("phone")}`,
+      city && `Delivery city: ${city}`,
+      neededBy && `Requested date: ${neededBy}`,
+    ].filter(Boolean);
+    const message = [
+      `The Gifting Bloom | ${form.get("subject")}`,
+      details.join("\n"),
+      enquiry,
+    ].join("\n\n");
+    const url = whatsapp(businessWhatsAppNumber, message);
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
   }
   const Container = embedded ? "section" : "main";
   return (
@@ -333,95 +366,143 @@ export function Contact({
       <PageHeading as={embedded ? "h2" : "h1"} label="Contact" title="Let’s talk blooms.">
         Ask about our handmade gifts or share an idea for a personalised bouquet.
       </PageHeading>
-      <div className="split-page">
-        <div className="panel">
+      <div className="split-page contact-layout">
+        <div className="panel contact-form-panel">
           <h2>Send an enquiry</h2>
-          {sent ? (
-            <p role="status">Your message has been sent.</p>
-          ) : (
-            <form className="form-stack" onSubmit={submit}>
-              <label>
-                Name
-                <input name="name" required minLength={2} maxLength={120} autoComplete="name" />
-              </label>
-              <label>
-                Email
-                <input required type="email" name="email" maxLength={254} autoComplete="email" />
-              </label>
-              <label>
-                Phone
-                <input
-                  required
-                  name="phone"
-                  type="tel"
-                  minLength={7}
-                  maxLength={26}
-                  autoComplete="tel"
-                />
-              </label>
-              <label>
-                What’s it about?
-                <select name="subject" defaultValue={enquiryType}>
-                  <option>General enquiry</option>
-                  <option>Gift enquiry</option>
-                  <option>Custom gift enquiry</option>
-                </select>
-              </label>
-              <label>
-                Message
-                <textarea
-                  name="message"
-                  required
-                  minLength={5}
-                  maxLength={2000}
-                  rows={4}
-                  defaultValue={giftMessage}
-                />
-              </label>
-              {error && (
-                <p role="alert" className="error-note">
-                  {error}
-                </p>
-              )}
-              <button className="btn btn-primary" disabled={pending}>
-                {pending ? "Sending…" : "Send enquiry"}
+          <p className="contact-required-note">
+            Fields marked * are required. Review and send your enquiry in WhatsApp.
+          </p>
+          <form className="contact-form" onSubmit={submit}>
+            <label>
+              <span>
+                Full name <span aria-hidden="true">*</span>
+              </span>
+              <input
+                name="name"
+                required
+                minLength={2}
+                maxLength={120}
+                autoComplete="name"
+                placeholder="Your name"
+              />
+            </label>
+            <label>
+              <span>
+                Email <span aria-hidden="true">*</span>
+              </span>
+              <input
+                required
+                type="email"
+                name="email"
+                maxLength={254}
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
+            </label>
+            <label>
+              <span>
+                Phone <span aria-hidden="true">*</span>
+              </span>
+              <input
+                required
+                name="phone"
+                type="tel"
+                maxLength={26}
+                pattern={String.raw`\+?(?:[ \(\)\-]*[0-9]){7,}[ \(\)\-]*`}
+                title="Enter at least seven digits. You can include a country code."
+                autoComplete="tel"
+                placeholder="Your phone number"
+              />
+            </label>
+            <label>
+              <span>
+                Enquiry type <span aria-hidden="true">*</span>
+              </span>
+              <select name="subject" required defaultValue={enquiryType ?? ""}>
+                <option value="" disabled>
+                  Choose a topic
+                </option>
+                <option>General enquiry</option>
+                <option>Gift enquiry</option>
+                <option>Custom gift enquiry</option>
+                <option>Delivery enquiry</option>
+              </select>
+            </label>
+            <label>
+              <span>
+                Delivery city <small>Optional</small>
+              </span>
+              <input
+                name="city"
+                maxLength={80}
+                autoComplete="address-level2"
+                placeholder="e.g. Pune"
+              />
+            </label>
+            <label>
+              <span>
+                Needed by <small>Optional</small>
+              </span>
+              <input type="date" name="needed-by" />
+            </label>
+            <label className="contact-span">
+              <span>
+                Message <span aria-hidden="true">*</span>
+              </span>
+              <textarea
+                name="message"
+                required
+                minLength={5}
+                maxLength={2000}
+                rows={4}
+                placeholder="Tell us about the gift, occasion or colours you have in mind."
+                defaultValue={giftMessage}
+              />
+            </label>
+            {error && (
+              <p role="alert" className="error-note contact-span">
+                {error}
+              </p>
+            )}
+            <div className="contact-submit contact-span">
+              <button className="btn btn-primary" type="submit">
+                Send via WhatsApp <ArrowUpRight size={16} aria-hidden="true" />
               </button>
-            </form>
-          )}
+              <Link className="text-link" to="/privacy-policy">
+                Privacy policy
+              </Link>
+            </div>
+          </form>
         </div>
-        <aside className="panel">
-          <h2>Find us</h2>
-          <div className="form-stack">
-            <a
-              href={settings["instagram"] || instagram}
-              target="_blank"
-              rel="noreferrer"
-              className="text-link"
-            >
-              <Instagram size={18} /> @the_gifting_bloom11 <ArrowUpRight size={15} />
+        <aside className="contact-channels">
+          <h2>Message us directly</h2>
+          <div className="contact-links">
+            {chat && (
+              <a className="contact-social-whatsapp" href={chat} target="_blank" rel="noreferrer">
+                <span className="contact-social-mark" aria-hidden="true" />
+                <span>WhatsApp</span>
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </a>
+            )}
+            <a className="contact-social-instagram" href={profile} target="_blank" rel="noreferrer">
+              <span className="contact-social-mark" aria-hidden="true" />
+              <span>Instagram</span>
+              <ArrowUpRight size={15} aria-hidden="true" />
             </a>
-            {link && (
-              <a href={link} target="_blank" rel="noreferrer" className="text-link">
-                Message on WhatsApp <ArrowUpRight size={15} />
-              </a>
-            )}
-            {settings["contact_email"] && (
-              <a href={"mailto:" + settings["contact_email"]} className="text-link">
-                {settings["contact_email"]}
-              </a>
-            )}
+            <a href={`mailto:${email}`}>
+              <span className="contact-social-icon">
+                <Mail size={22} aria-hidden="true" />
+              </span>
+              <span>{email}</span>
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </a>
+            <address className="contact-address">
+              <span className="contact-social-icon">
+                <MapPin size={22} aria-hidden="true" />
+              </span>
+              <span className="preserve-lines">{address}</span>
+            </address>
           </div>
-          <h2 className="section-space">Frequently asked</h2>
-          <details>
-            <summary>Can I make a custom bouquet?</summary>
-            <p>
-              Use the{" "}
-              <Link className="text-link" to="/" hash="customise" search={true}>
-                bouquet builder
-              </Link>{" "}
-              to choose your stems, colours, and packaging.
-            </p>
-          </details>
         </aside>
       </div>
     </Container>

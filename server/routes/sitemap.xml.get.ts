@@ -1,5 +1,6 @@
 import { defineHandler } from "nitro";
 import { getStore } from "../../src/lib/bloom-api.server";
+import { bouquetBuilderEnabled } from "../../src/lib/bloom";
 
 export default defineHandler(async (event) => {
   const origin =
@@ -9,7 +10,7 @@ export default defineHandler(async (event) => {
     "/",
     "/bouquets",
     "/mini-gifts",
-    "/customise",
+    ...(bouquetBuilderEnabled ? ["/customise"] : []),
     "/our-story",
     "/bloom-diaries",
     "/gift-finder",

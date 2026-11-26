@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useEffect, useRef, type ComponentPropsWithoutRef } from "react";
+import { bouquetBuilderEnabled } from "@/lib/bloom";
 import {
   Link as RouterLink,
   useLocation,
@@ -95,7 +96,9 @@ export function RouteScroll() {
       if (navigation === "POP" && previous !== undefined) {
         window.scrollTo(0, previous);
       } else if (location.hash) {
-        document.getElementById(location.hash.slice(1))?.scrollIntoView();
+        const section = location.hash.slice(1);
+        const target = section === "customise" && !bouquetBuilderEnabled ? "contact" : section;
+        document.getElementById(target)?.scrollIntoView();
       } else if (location.key !== "default") {
         window.scrollTo(0, 0);
       }

@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { colourValue, type Product } from "@/lib/bloom";
+import { bouquetBuilderEnabled, colourValue, type Product } from "@/lib/bloom";
 
 export function ProductImage({
   src,
@@ -114,7 +114,7 @@ export function GiftDetails({ product }: { product: Product }) {
 
 function PreviewDetails({ product }: { product: Product }) {
   const [search] = useSearchParams();
-  const isBouquet = product.category === "bouquets";
+  const canCustomise = bouquetBuilderEnabled && product.category === "bouquets";
   return (
     <div className="quick-view-details">
       {product.categoryName && <p className="eyebrow">{product.categoryName}</p>}
@@ -161,10 +161,10 @@ function PreviewDetails({ product }: { product: Product }) {
           <Link
             className="text-link"
             to="/"
-            hash={isBouquet ? "customise" : "collection"}
-            search={isBouquet ? true : { category: product.category }}
+            hash={canCustomise ? "customise" : "collection"}
+            search={canCustomise ? true : { category: product.category }}
           >
-            {isBouquet ? "Customise a bouquet" : "See more in this category"}
+            {canCustomise ? "Customise a bouquet" : "See more in this category"}
             <ArrowRight size={15} />
           </Link>
         </DialogClose>
@@ -249,12 +249,17 @@ export function ProductCard({
                 {embedded ? "View gift" : "Quick view"}
               </button>
             </DialogTrigger>
-            {product.category === "bouquets" ? (
+            {bouquetBuilderEnabled && product.category === "bouquets" ? (
               <Link className="text-link" to="/" hash="customise" search={true}>
                 Customise <ArrowRight size={14} />
               </Link>
             ) : embedded ? (
-              <Link className="text-link" to="/" hash="contact" search={true}>
+              <Link
+                className="text-link"
+                to="/"
+                hash="contact"
+                search={product.category === "bouquets" ? { gift: product.slug } : true}
+              >
                 Enquire <ArrowRight size={14} />
               </Link>
             ) : (
