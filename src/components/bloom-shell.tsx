@@ -172,8 +172,7 @@ export function BloomShell({
             </div>
             <div className="wrap footer-bottom">
               <p>
-                Copyright 2026 <Link to="/">The Gifting Bloom</Link>. All rights reserved. By{" "}
-                <a href="https://my-portfolio-eight-sage-73.vercel.app/">Vaishnavi Pawar</a>
+                Copyright 2026 <Link to="/">The Gifting Bloom</Link>. All rights reserved.
               </p>
             </div>
           </footer>
