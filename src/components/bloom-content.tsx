@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { sendEnquiry } from "@/lib/bloom-api";
-import { instagram, occasions, whatsapp } from "@/lib/bloom";
+import { categoryNames, instagram, whatsapp } from "@/lib/bloom";
 import couple from "@/assets/story-couple-optimized.jpg";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductImage, ProductPreview } from "./bloom-products";
@@ -12,13 +12,13 @@ import { GiftFinder, Gallery } from "./bloom-gallery";
 import { Customise } from "./bloom-customise";
 import { BloomLogo } from "./bloom-logo";
 
-const feelings = [
-  ["Love & Romance", occasions[0], 0],
-  ["Birthday Surprises", occasions[1], 1],
-  ["Just Because", occasions[7], 2],
-  ["Best Friend Gifts", occasions[3], 3],
-  ["Thank You Gifts", occasions[5], 1],
-  ["Custom Handmade Gifts", "", 0],
+const featuredCategories = [
+  "single-flowers",
+  "bouquets",
+  "keychains",
+  "diya-holders",
+  "car-dashboard-pots",
+  "flower-pot-flowers",
 ] as const;
 export function Home({ occasion, category }: { occasion: string; category: string }) {
   const { products, reviews, reels, settings } = useBloom();
@@ -30,31 +30,28 @@ export function Home({ occasion, category }: { occasion: string; category: strin
         <div className="section-heading">
           <div>
             <p className="eyebrow">For the people you love</p>
-            <h2>Gifts for every feeling.</h2>
+            <h2>Explore by category.</h2>
           </div>
           <Link className="text-link" to="/" hash="gift-finder" search={true}>
             Take the gift finder <ArrowRight size={17} />
           </Link>
         </div>
         <div className="feeling-grid">
-          {feelings.map(([label, feeling, index]) => {
-            const product =
-              products.find((item) => item.occasions.includes(feeling)) ||
-              products[index] ||
-              products[0];
+          {featuredCategories.map((slug) => {
+            const product = products.find((item) => item.category === slug && item.image_url);
             return (
               <Link
                 to="/"
-                hash={feeling ? "collection" : "customise"}
-                search={feeling ? { occasion: feeling } : true}
-                key={label}
+                hash="collection"
+                search={{ category: slug }}
+                key={slug}
                 className="feeling-card"
               >
                 <div className="feeling-media">
                   <ProductImage src={product?.image_url} alt="" />
                 </div>
                 <span>
-                  {label}
+                  {categoryNames[slug]}
                   <ArrowUpRight size={17} />
                 </span>
                 {product?.is_demo && <small>Concept illustration</small>}
