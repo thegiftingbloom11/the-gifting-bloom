@@ -50,7 +50,9 @@ export function Home({ occasion, category }: { occasion: string; category: strin
                 key={label}
                 className="feeling-card"
               >
-                <ProductImage src={product?.image_url} alt="" />
+                <div className="feeling-media">
+                  <ProductImage src={product?.image_url} alt="" />
+                </div>
                 <span>
                   {label}
                   <ArrowUpRight size={17} />

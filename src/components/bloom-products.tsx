@@ -103,7 +103,7 @@ export function ProductPreview({
     <DialogContent className="bloom-dialog quick-view">
       <DialogTitle>{product.name}</DialogTitle>
       <div>
-        <div>
+        <div className="quick-view-photos">
           <ProductImage src={gallery[photo]} alt={product.image_alt || product.name} />
           {embedded && gallery.length > 1 && (
             <div className="gallery-thumbs">
