@@ -13,7 +13,7 @@ import { ProductImage } from "./bloom-products";
 import { useBloom } from "./bloom-shell";
 import type { Playhead } from "./bloom-stage";
 import { Link } from "./bloom-navigation";
-import { ease, gardenTimeAt, storyEnd } from "@/lib/bloom-timing";
+import { ease, gardenTimeAt, storyEnd, storyTimeAtScroll } from "@/lib/bloom-timing";
 import { BloomPrologue, updatePrologue } from "./bloom-prologue";
 import "./bloom-prologue.css";
 import heartAura from "@/assets/story-heart-aura.jpg";
@@ -199,11 +199,13 @@ export function BloomStory() {
     let distance = 1;
     let frame = 0;
     let lastFrame = 0;
+    let displayedProgress = -1;
     let time = -1;
     let inOpening: boolean | undefined;
     const prologue = section.querySelector<HTMLElement>(".bloom-prologue");
 
     const render = (at: number) => {
+      if (at === time) return;
       time = at;
       const garden = gardenTimeAt(at);
       if (meter.current) meter.current.value = at / storyEnd;
@@ -226,17 +228,21 @@ export function BloomStory() {
     function tick(now: number) {
       frame = 0;
       const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
-      const target = progress * storyEnd;
-      const next =
-        time < 0 || Math.abs(target - time) < 0.006
-          ? target
-          : time + (target - time) * (1 - Math.exp(-((lastFrame ? now - lastFrame : 16) / 54)));
-      if (next !== time) render(next);
+      const elapsed = lastFrame ? Math.min(24, now - lastFrame) : 16;
+      const remaining = progress - displayedProgress;
+      if (displayedProgress < 0 || Math.abs(remaining) < 0.0004) {
+        displayedProgress = progress;
+      } else {
+        // Pace a fast swipe without taking control of native scrolling.
+        const step = Math.min(Math.abs(remaining) * (1 - Math.exp(-elapsed / 54)), elapsed / 1800);
+        displayedProgress += Math.sign(remaining) * step;
+      }
+      render(storyTimeAtScroll(displayedProgress));
       if (inOpening !== progress < 1) {
         inOpening = progress < 1;
         setOpening(inOpening);
       }
-      lastFrame = next === target ? 0 : now;
+      lastFrame = displayedProgress === progress ? 0 : now;
       if (lastFrame) requestTick();
     }
 

@@ -1,6 +1,40 @@
 ﻿import { describe, expect, it } from "vitest";
 import { contactEnd, contactStart, storyPose } from "@/lib/bloom-choreography";
-import { gardenStart, gardenTimeAt, storyEnd, timelineEnd } from "@/lib/bloom-timing";
+import {
+  gardenStart,
+  gardenTimeAt,
+  storyEnd,
+  storyTimeAtScroll,
+  timelineEnd,
+} from "@/lib/bloom-timing";
+
+describe("scroll timing", () => {
+  it("gives the phone, confirmation, delivery and heart scenes space on the scroll track", () => {
+    for (const [from, to, time] of [
+      [0.15, 0.17, 2.48],
+      [0.3, 0.32, 4.16],
+      [0.39, 0.42, 4.98],
+      [0.51, 0.52, 6.46],
+      [0.59, 0.61, 7.58],
+      [0.93, 0.94, 12.8],
+    ] as const) {
+      expect(storyTimeAtScroll(from)).toBe(time);
+      expect(storyTimeAtScroll(to)).toBe(time);
+    }
+  });
+
+  it("never reorders scenes along the track and reaches both endpoints", () => {
+    expect(storyTimeAtScroll(-0.1)).toBe(0);
+    let previous = 0;
+    for (let step = 0; step <= 1000; step++) {
+      const time = storyTimeAtScroll(step / 1000);
+      expect(time).toBeGreaterThanOrEqual(previous);
+      previous = time;
+    }
+    expect(previous).toBe(storyEnd);
+    expect(storyTimeAtScroll(1.1)).toBe(storyEnd);
+  });
+});
 
 describe("cinematic bouquet exchange", () => {
   it("plays the garden entrance and the original exchange after the shopping prologue", () => {
