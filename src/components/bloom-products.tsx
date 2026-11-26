@@ -1,10 +1,12 @@
 import { Link } from "./bloom-navigation";
 import { ArrowRight, Flower2 } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -68,28 +70,81 @@ export function Swatches({
   );
 }
 
-export function GiftDetails({
-  product,
-  inDialog = false,
-}: {
-  product: Product;
-  inDialog?: boolean;
-}) {
-  const contact = (
-    <Link className="text-link" to="/" hash="contact" search={true}>
-      Ask about this gift <ArrowRight size={16} />
-    </Link>
-  );
+export function GiftDetails({ product }: { product: Product }) {
   return (
     <div className="gift-details">
       {product.is_demo && <span className="pill">Illustration</span>}
       <p>{product.description}</p>
       {!!product.colors.length && <Swatches values={product.colors} />}
       {!!product.variants.length && <p>Styles: {product.variants.join(", ")}</p>}
-      {inDialog ? <DialogClose asChild>{contact}</DialogClose> : contact}
+      <Link className="text-link" to="/" hash="contact" search={{ gift: product.slug }}>
+        Ask about this gift <ArrowRight size={16} />
+      </Link>
     </div>
   );
 }
+
+function PreviewDetails({ product }: { product: Product }) {
+  const [search] = useSearchParams();
+  const isBouquet = product.category === "bouquets";
+  return (
+    <div className="quick-view-details">
+      {product.categoryName && <p className="eyebrow">{product.categoryName}</p>}
+      {product.is_demo && <span className="pill">Illustration</span>}
+      <DialogDescription className="quick-view-description">
+        {product.description}
+      </DialogDescription>
+      <dl className="quick-view-facts">
+        {!!product.colors.length && (
+          <div>
+            <dt>Colours shown</dt>
+            <dd>
+              <Swatches values={product.colors} />
+              {product.colors.join(" · ")}
+            </dd>
+          </div>
+        )}
+        {!!product.variants.length && (
+          <div>
+            <dt>Styles</dt>
+            <dd>{product.variants.join(" · ")}</dd>
+          </div>
+        )}
+        {!!product.occasions.length && (
+          <div>
+            <dt>Gift for</dt>
+            <dd>{product.occasions.join(" · ")}</dd>
+          </div>
+        )}
+      </dl>
+      <div className="quick-view-actions">
+        <p>Ask about pricing, availability or colour options.</p>
+        <DialogClose asChild>
+          <Link
+            className="btn btn-primary"
+            to="/"
+            hash="contact"
+            search={{ ...Object.fromEntries(search), gift: product.slug }}
+          >
+            Enquire about this gift <ArrowRight size={16} />
+          </Link>
+        </DialogClose>
+        <DialogClose asChild>
+          <Link
+            className="text-link"
+            to="/"
+            hash={isBouquet ? "customise" : "collection"}
+            search={isBouquet ? true : { category: product.category }}
+          >
+            {isBouquet ? "Customise a bouquet" : "See more in this category"}
+            <ArrowRight size={15} />
+          </Link>
+        </DialogClose>
+      </div>
+    </div>
+  );
+}
+
 export function ProductPreview({
   product,
   embedded = false,
@@ -130,7 +185,7 @@ export function ProductPreview({
             />
           )}
         </div>
-        <GiftDetails product={product} inDialog />
+        <PreviewDetails product={product} />
       </div>
     </DialogContent>
   );

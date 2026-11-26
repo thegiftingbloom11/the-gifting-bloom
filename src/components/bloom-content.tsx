@@ -1,5 +1,6 @@
 import { Link } from "./bloom-navigation";
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router";
 import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { sendEnquiry } from "@/lib/bloom-api";
@@ -23,6 +24,9 @@ const featuredCategories = [
 ] as const;
 export function Home({ occasion, category }: { occasion: string; category: string }) {
   const { products, reviews, reels, settings } = useBloom();
+  const [search] = useSearchParams();
+  const giftSlug = search.get("gift");
+  const gift = giftSlug ? products.find((product) => product.slug === giftSlug) : undefined;
   const profile = settings["instagram"] || instagram;
   return (
     <main className="single-page" id="home">
@@ -107,7 +111,7 @@ export function Home({ occasion, category }: { occasion: string; category: strin
           {!!reels.length && <ReelGrid embedded />}
         </div>
       </section>
-      <Contact embedded />
+      <Contact key={gift?.slug} embedded giftName={gift?.name ?? ""} />
     </main>
   );
 }
@@ -275,12 +279,16 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
   );
 }
 
-export function Contact({ embedded = false }: { embedded?: boolean } = {}) {
+export function Contact({
+  embedded = false,
+  giftName = "",
+}: { embedded?: boolean; giftName?: string } = {}) {
   const { settings } = useBloom();
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
-  const link = whatsapp(settings["whatsapp"], "Hi! I have a question about a gift.");
+  const giftMessage = giftName ? `Hi! I'd like to ask about ${giftName}.` : "";
+  const link = whatsapp(settings["whatsapp"], giftMessage || "Hi! I have a question about a gift.");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
@@ -341,7 +349,7 @@ export function Contact({ embedded = false }: { embedded?: boolean } = {}) {
               </label>
               <label>
                 What’s it about?
-                <select name="subject">
+                <select name="subject" defaultValue={giftName ? "Gift enquiry" : undefined}>
                   <option>General enquiry</option>
                   <option>Gift enquiry</option>
                   <option>Custom gift enquiry</option>
@@ -349,7 +357,14 @@ export function Contact({ embedded = false }: { embedded?: boolean } = {}) {
               </label>
               <label>
                 Message
-                <textarea name="message" required minLength={5} maxLength={2000} rows={4} />
+                <textarea
+                  name="message"
+                  required
+                  minLength={5}
+                  maxLength={2000}
+                  rows={4}
+                  defaultValue={giftMessage}
+                />
               </label>
               {error && (
                 <p role="alert" className="error-note">
