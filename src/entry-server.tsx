@@ -24,11 +24,15 @@ export default {
       const headers = { "Content-Type": "text/html; charset=utf-8" };
       if (request.method === "HEAD") return new Response(null, { status, headers });
       const assets = clientAssets.merge(serverAssets);
-      const data = { store, assets: { entry: assets.entry, css: assets.css, js: assets.js } };
+      const data = {
+        store,
+        requestOrigin: url.origin,
+        assets: { entry: assets.entry, css: assets.css, js: assets.js },
+      };
       const body = await renderToReadableStream(
         <BloomDocument data={data}>
           <StaticRouter location={url.pathname + url.search}>
-            <App initialStore={store} />
+            <App initialStore={store} requestOrigin={data.requestOrigin} />
           </StaticRouter>
         </BloomDocument>,
       );

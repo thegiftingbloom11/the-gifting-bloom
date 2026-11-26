@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { bloomLogoUrl } from "./components/bloom-logo";
 import type { StoreData } from "./lib/bloom-api";
 
 export type BloomDocumentData = {
   store: StoreData;
+  requestOrigin: string;
   assets: {
     entry: string | undefined;
     css: { href: string; "data-vite-dev-id"?: string }[];
@@ -26,7 +26,8 @@ export function BloomDocument({
         <meta name="author" content="The Gifting Bloom" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <link rel="icon" href={bloomLogoUrl} type="image/png" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32 48x48 64x64" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

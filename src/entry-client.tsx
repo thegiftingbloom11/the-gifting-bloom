@@ -14,7 +14,7 @@ hydrateRoot(
   document,
   <BloomDocument data={data}>
     <BrowserRouter>
-      <App initialStore={data.store} />
+      <App initialStore={data.store} requestOrigin={data.requestOrigin} />
     </BrowserRouter>
   </BloomDocument>,
   {

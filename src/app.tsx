@@ -144,7 +144,22 @@ export function resolvePage(
   };
 }
 
-export function App({ initialStore }: { initialStore: StoreData }) {
+function webUrl(value: string, base?: string) {
+  try {
+    const url = new URL(value, base);
+    return url.protocol === "https:" || url.protocol === "http:" ? url : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function App({
+  initialStore,
+  requestOrigin,
+}: {
+  initialStore: StoreData;
+  requestOrigin: string;
+}) {
   const [store, setStore] = useState(initialStore);
   const refreshStore = useCallback(async () => setStore(await getStore()), []);
   const location = useLocation();
@@ -159,14 +174,31 @@ export function App({ initialStore }: { initialStore: StoreData }) {
     );
   const page = resolvePage(pathname, store);
   const title = page.title + " | The Gifting Bloom";
-  const origin = import.meta.env["VITE_SITE_URL"]?.replace(/\/+$/, "");
+  const configuredOrigin = import.meta.env["VITE_SITE_URL"];
+  const canonicalOrigin = configuredOrigin && webUrl(configuredOrigin)?.origin;
+  const origin = canonicalOrigin || requestOrigin;
+  const productPreview = page.image && webUrl(page.image, origin)?.href;
+  const previewImage = productPreview || new URL("/the-gifting-bloom-preview.jpg", origin).href;
+  const previewAlt = productPreview ? page.title : "The Gifting Bloom logo";
   return (
     <BloomShell store={store} refreshStore={refreshStore}>
       <title>{title}</title>
       <meta name="description" content={page.description} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={page.description} />
-      {page.image && <meta property="og:image" content={page.image} />}
+      <meta property="og:site_name" content="The Gifting Bloom" />
+      <meta property="og:url" content={origin + pathname} />
+      <meta property="og:image" content={previewImage} />
+      {!productPreview && (
+        <>
+          <meta property="og:image:type" content="image/jpeg" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+        </>
+      )}
+      <meta property="og:image:alt" content={previewAlt} />
+      <meta name="twitter:image" content={previewImage} />
+      <meta name="twitter:image:alt" content={previewAlt} />
       {page.noIndex && <meta name="robots" content="noindex, follow" />}
       {page.structuredData && (
         <script
@@ -174,7 +206,7 @@ export function App({ initialStore }: { initialStore: StoreData }) {
           dangerouslySetInnerHTML={{ __html: page.structuredData }}
         />
       )}
-      {origin && page.status === 200 && <link rel="canonical" href={origin + pathname} />}
+      {canonicalOrigin && page.status === 200 && <link rel="canonical" href={origin + pathname} />}
       <RouteScroll />
       <Suspense
         fallback={
