@@ -475,14 +475,13 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 .feeling-media {
   min-width: 0;
   min-height: 0;
-  padding: 7px;
   background: linear-gradient(150deg, #fff7f0, #f4e0e4);
 }
 .feeling-media :is(img, .image-fallback) {
   width: 100%;
   height: 100%;
   min-height: 0;
-  object-fit: contain;
+  object-fit: cover;
 }
 .feeling-card span {
   width: 100%;
