@@ -19,8 +19,11 @@ const catalogue: StoreData = {
 };
 
 describe("App routing", () => {
-  it("opens WhatsApp with the contact form details and the prefilled gift enquiry", () => {
-    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+  it("emails the prefilled gift enquiry through Web3Forms and keeps inputs on failure", async () => {
+    const submit = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json({ success: false }, { status: 429 }))
+      .mockResolvedValueOnce(Response.json({ success: true }));
     try {
       render(
         <MemoryRouter initialEntries={["/contact?gift=pocketful-of-sun"]}>
@@ -35,30 +38,30 @@ describe("App routing", () => {
       fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "9876543210" } });
       fireEvent.change(screen.getByLabelText(/delivery city/i), { target: { value: "Pune" } });
       fireEvent.change(screen.getByLabelText(/needed by/i), { target: { value: "2026-12-01" } });
-      fireEvent.click(screen.getByRole("button", { name: "Send via WhatsApp" }));
+      const button = screen.getByRole("button", { name: "Send enquiry" });
+      fireEvent.click(button);
+      expect(await screen.findByRole("alert")).toHaveTextContent("Please try again");
+      expect(screen.getByLabelText(/full name/i)).toHaveValue("Test Customer");
 
-      expect(open).toHaveBeenCalledExactlyOnceWith(
-        expect.any(String),
-        "_blank",
-        "noopener,noreferrer",
-      );
-      const url = new URL(open.mock.calls[0]![0]!);
-      expect(url.origin + url.pathname).toBe("https://wa.me/918767980311");
-      expect(url.searchParams.get("text")).toBe(
-        [
-          "The Gifting Bloom | Gift enquiry",
-          "",
-          "Name: Test Customer",
-          "Email: test@example.com",
-          "Phone: 9876543210",
-          "Delivery city: Pune",
-          "Requested date: 2026-12-01",
-          "",
-          "Hi! I'd like to ask about Sunflower Bouquet.",
-        ].join("\n"),
-      );
+      fireEvent.click(button);
+      expect(await screen.findByRole("status")).toHaveTextContent("Your enquiry has been sent");
+      expect(screen.getByLabelText(/full name/i)).toHaveValue("");
+      const [url, request] = submit.mock.calls[1]!;
+      expect(url).toBe("https://api.web3forms.com/submit");
+      expect(request?.method).toBe("POST");
+      expect(JSON.parse(String(request?.body))).toEqual({
+        access_key: expect.stringMatching(/^[a-f0-9-]{36}$/),
+        from_name: "The Gifting Bloom",
+        subject: "The Gifting Bloom | Gift enquiry",
+        name: "Test Customer",
+        email: "test@example.com",
+        phone: "9876543210",
+        "Delivery city": "Pune",
+        "Needed by": "2026-12-01",
+        message: "Hi! I'd like to ask about Sunflower Bouquet.",
+      });
     } finally {
-      open.mockRestore();
+      submit.mockRestore();
     }
   });
 

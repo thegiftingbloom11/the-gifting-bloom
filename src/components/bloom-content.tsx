@@ -312,6 +312,9 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
   );
 }
 
+// Web3Forms uses a public form access key to route submissions to its configured inbox.
+const web3FormsAccessKey = "c9bde02e-d7ea-49c1-8e7e-b375dc990cb0";
+
 export function Contact({
   embedded = false,
   giftName = "",
@@ -326,6 +329,8 @@ export function Contact({
   const address = settings["contact_address"]?.trim() || businessAddress;
   const email = settings["contact_email"]?.trim() || businessEmail;
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const giftMessage = requestedGift
     ? `Hi! I'd like to ask about ${requestedGift}.`
     : requestedColour
@@ -340,10 +345,13 @@ export function Contact({
   const chat =
     whatsapp(settings["whatsapp"], chatMessage) ?? whatsapp(businessWhatsAppNumber, chatMessage);
   const profile = settings["instagram"] || instagram;
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    if (sending) return;
+    const element = event.currentTarget;
+    const form = new FormData(element);
     setError("");
+    setSent(false);
     const city = String(form.get("city") ?? "").trim();
     const neededBy = String(form.get("needed-by") ?? "");
     const enquiry = String(form.get("message") ?? "").trim();
@@ -351,20 +359,33 @@ export function Contact({
       setError("Please tell us a little more about your enquiry.");
       return;
     }
-    const details = [
-      `Name: ${String(form.get("name") ?? "").trim()}`,
-      `Email: ${form.get("email")}`,
-      `Phone: ${form.get("phone")}`,
-      city && `Delivery city: ${city}`,
-      neededBy && `Requested date: ${neededBy}`,
-    ].filter(Boolean);
-    const message = [
-      `The Gifting Bloom | ${form.get("subject")}`,
-      details.join("\n"),
-      enquiry,
-    ].join("\n\n");
-    const url = whatsapp(businessWhatsAppNumber, message);
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    setSending(true);
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: web3FormsAccessKey,
+          from_name: "The Gifting Bloom",
+          subject: `The Gifting Bloom | ${form.get("subject")}`,
+          name: String(form.get("name") ?? "").trim(),
+          email: form.get("email"),
+          phone: form.get("phone"),
+          message: enquiry,
+          ...(city && { "Delivery city": city }),
+          ...(neededBy && { "Needed by": neededBy }),
+          ...(form.has("botcheck") && { botcheck: true }),
+        }),
+      });
+      const result: { success?: boolean } | null = await response.json();
+      if (!response.ok || result?.success !== true) throw new Error("Enquiry submission failed");
+      element.reset();
+      setSent(true);
+    } catch {
+      setError("We couldn’t send your enquiry. Please try again or contact us directly.");
+    } finally {
+      setSending(false);
+    }
   }
   const Container = embedded ? "section" : "main";
   return (
@@ -378,10 +399,9 @@ export function Contact({
       <div className="split-page contact-layout">
         <div className="panel contact-form-panel">
           <h2>Send an enquiry</h2>
-          <p className="contact-required-note">
-            Fields marked * are required. Review and send your enquiry in WhatsApp.
-          </p>
-          <form key={giftMessage} className="contact-form" onSubmit={submit}>
+          <p className="contact-required-note">Fields marked * are required.</p>
+          <form key={giftMessage} className="contact-form" onSubmit={submit} aria-busy={sending}>
+            <input type="checkbox" name="botcheck" hidden tabIndex={-1} autoComplete="off" />
             <label>
               <span>
                 Full name <span aria-hidden="true">*</span>
@@ -473,9 +493,14 @@ export function Contact({
                 {error}
               </p>
             )}
+            {sent && (
+              <p role="status" className="contact-span">
+                Thanks! Your enquiry has been sent.
+              </p>
+            )}
             <div className="contact-submit contact-span">
-              <button className="btn btn-primary" type="submit">
-                Send via WhatsApp <ArrowUpRight size={16} aria-hidden="true" />
+              <button className="btn btn-primary" type="submit" disabled={sending}>
+                {sending ? "Sending…" : "Send enquiry"} <ArrowRight size={16} aria-hidden="true" />
               </button>
               <Link className="text-link" to="/privacy-policy">
                 Privacy policy
@@ -517,7 +542,7 @@ export function Contact({
 const policies = {
   privacy: [
     "Privacy Policy",
-    "We use the contact details you submit to respond to your enquiry. WhatsApp and Instagram handle messages under their own privacy policies.",
+    "We use the contact details you submit to respond to your enquiry. Web3Forms processes contact form submissions and delivers them to us by email. WhatsApp and Instagram handle direct messages under their own privacy policies.",
   ],
   terms: [
     "Terms & Conditions",
