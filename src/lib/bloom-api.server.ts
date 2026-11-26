@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { publicCloud } from "./bloom-cloud.server";
-import { jsonSetting, productOptions, samples, type Product } from "./bloom";
+import { jsonSetting, productOptions, type Product } from "./bloom";
+import { studioCollection, withStudioCollection } from "./bloom-collection";
 
 export async function getStore() {
   const fallback = {
-    products: samples,
+    products: studioCollection,
     categories: [] as { id: string; slug: string; name: string }[],
     settings: {} as Record<string, string>,
     reviews: [] as {
@@ -68,7 +69,7 @@ export async function getStore() {
       };
     });
     return {
-      products: catalog.length || config["hide_demo"] === "true" ? catalog : samples,
+      products: withStudioCollection(catalog),
       categories: categories.data ?? [],
       settings: Object.fromEntries(
         Object.entries(config).filter(

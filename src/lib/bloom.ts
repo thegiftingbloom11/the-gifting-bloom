@@ -7,6 +7,7 @@ export const colours = {
   Blush: "#e7a0b4",
   Ivory: "#f5e5ca",
   Lavender: "#ae99cc",
+  Blue: "#82b4db",
   Sage: "#94a687",
   Gold: "#e1a32e",
   Plum: "#684052",
@@ -21,7 +22,24 @@ export const occasions = [
   "Festive Gifting",
   "Just Because",
 ] as const;
-export const categoryNames = { bouquets: "Bouquets", "mini-gifts": "Mini gifts" };
+export const categoryNames = {
+  bouquets: "Bouquets",
+  "single-flowers": "Single Flowers",
+  keychains: "Keychains",
+  "diya-holders": "Diya Holders",
+  "car-dashboard-pots": "Car Dashboard Pots",
+  "flower-pot-flowers": "Flower Pot Flowers",
+  "mini-gifts": "Mini gifts",
+};
+
+export function matchesProductCategory(category: string, filter: string) {
+  return (
+    !filter ||
+    category === filter ||
+    (filter === "mini-gifts" &&
+      ["keychains", "diya-holders", "car-dashboard-pots"].includes(category))
+  );
+}
 export const productOptions = z.object({
   images: z.array(z.url()).max(8).default([]),
   video: z.union([z.url(), z.literal("")]).default(""),
@@ -42,67 +60,6 @@ export type Product = Omit<
   | "stock_count"
 > &
   ProductOptions & { category: string; categoryName: string };
-const demoProduct = (
-  slug: string,
-  name: string,
-
-  category: keyof typeof categoryNames,
-  colors: string[],
-  description: string,
-  targets: string[],
-): Product => ({
-  id: slug,
-  slug,
-  name,
-
-  category,
-  categoryName: categoryNames[category],
-  colors,
-  description,
-
-  image_url: "/blooms/" + slug + ".jpg",
-  image_alt: name + " concept image",
-  is_demo: true,
-  ...productOptions.parse({ occasions: targets }),
-});
-export const samples = [
-  demoProduct(
-    "blush-keepsake",
-    "The Blush Keepsake",
-
-    "bouquets",
-    ["Blush", "Ivory", "Rose"],
-    "Soft chenille roses gathered in cream paper and finished with a rose-pink ribbon.",
-    [occasions[0], occasions[2], occasions[7]],
-  ),
-  demoProduct(
-    "pocketful-of-sun",
-    "Pocketful of Sun",
-
-    "bouquets",
-    ["Gold", "Sage"],
-    "A bundle of sunny chenille stems in warm kraft wrap for days that deserve a little brightness.",
-    [occasions[1], occasions[4], occasions[5]],
-  ),
-  demoProduct(
-    "lavender-letter",
-    "The Lavender Letter",
-
-    "bouquets",
-    ["Lavender", "Ivory"],
-    "A petite posy of lavender and cream daisies, finished with a matching ribbon.",
-    [occasions[3], occasions[6], occasions[7]],
-  ),
-  demoProduct(
-    "little-bloom-charm",
-    "Little Bloom Charm",
-
-    "mini-gifts",
-    ["Blush", "Lavender"],
-    "A small fuzzy daisy on a gold-tone keyring to carry a little bloom wherever you go.",
-    [occasions[1], occasions[3], occasions[7]],
-  ),
-];
 export const customSchema = z.object({
   flower: z.enum(["rose", "daisy", "sunflower"]),
   count: z.number().int().min(1).max(24),

@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { sendEnquiry } from "@/lib/bloom-api";
-import { instagram, occasions, samples, whatsapp } from "@/lib/bloom";
+import { instagram, occasions, whatsapp } from "@/lib/bloom";
 import couple from "@/assets/story-couple-optimized.jpg";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductImage, ProductPreview } from "./bloom-products";
@@ -41,7 +41,7 @@ export function Home({ occasion, category }: { occasion: string; category: strin
             const product =
               products.find((item) => item.occasions.includes(feeling)) ||
               products[index] ||
-              samples[index];
+              products[0];
             return (
               <Link
                 to="/"

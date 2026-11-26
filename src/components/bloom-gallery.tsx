@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "./bloom-navigation";
 import { ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-import { occasions, type Product } from "@/lib/bloom";
+import { matchesProductCategory, occasions, type Product } from "@/lib/bloom";
 import { useBloom } from "./bloom-shell";
 import { PageHeading, ProductGrid, ProductImage, GiftDetails } from "./bloom-products";
 
@@ -16,7 +16,7 @@ export function Gallery({
   initialCategory?: string;
   embedded?: boolean;
 }) {
-  const { products, cloud, categories, settings } = useBloom();
+  const { products, categories, settings } = useBloom();
   const navigate = useNavigate();
   const currentCategory = categories.find(({ slug }) => slug === category);
   const categoryImage = currentCategory && settings["category-image:" + currentCategory.id];
@@ -48,11 +48,14 @@ export function Gallery({
       .filter((item) => item.category)
       .map(({ category, categoryName }) => [category, categoryName]),
   );
+  if (filterCategory === "mini-gifts") {
+    options.set("mini-gifts", "Mini gifts");
+  }
   const choices = [...new Set(products.flatMap(({ colors }) => colors))].sort();
   const matches = products
     .filter((item) => {
       return (
-        (!(category || filterCategory) || item.category === (category || filterCategory)) &&
+        matchesProductCategory(item.category, category || filterCategory) &&
         (!search ||
           [item.name, item.description, item.categoryName].some((field) =>
             field.toLowerCase().includes(search.trim().toLowerCase()),
@@ -105,20 +108,16 @@ export function Gallery({
           >
             All gifts
           </button>
-          <button
-            type="button"
-            aria-pressed={filterCategory === "bouquets"}
-            onClick={() => updateFilters("bouquets", occasion)}
-          >
-            Bouquets
-          </button>
-          <button
-            type="button"
-            aria-pressed={filterCategory === "mini-gifts"}
-            onClick={() => updateFilters("mini-gifts", occasion)}
-          >
-            Mini gifts
-          </button>
+          {[...options].map(([slug, name]) => (
+            <button
+              key={slug}
+              type="button"
+              aria-pressed={filterCategory === slug}
+              onClick={() => updateFilters(slug, occasion)}
+            >
+              {name}
+            </button>
+          ))}
           <Link to="/" hash="gift-finder" search={true}>
             Gift finder <ArrowRight size={15} />
           </Link>
@@ -207,13 +206,6 @@ export function Gallery({
           </label>
         </div>
       </div>
-      {!cloud && (
-        <p className="notice">
-          {products.some(({ is_demo }) => is_demo)
-            ? "The live catalogue is unavailable. Sample designs are marked Illustration."
-            : "The live catalogue is unavailable."}
-        </p>
-      )}
       <p className="fine result-count" aria-live="polite">
         {matches.length} {matches.length === 1 ? "gift" : "gifts"}
       </p>
@@ -331,7 +323,8 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
     Number(
       answers[0] === "Partner"
         ? item.category === "bouquets"
-        : ["Friend", "Colleague"].includes(answers[0]) && item.category === "mini-gifts",
+        : ["Friend", "Colleague"].includes(answers[0]) &&
+            matchesProductCategory(item.category, "mini-gifts"),
     );
   const matches = products
     .filter(
