@@ -23,6 +23,16 @@ export function BloomDocument({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-PZCKZQQ3" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag() { window.dataLayer.push(arguments); }
+              gtag('js', new Date());
+            `,
+          }}
+        />
         <meta name="author" content="The Gifting Bloom" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
