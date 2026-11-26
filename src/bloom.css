@@ -467,6 +467,7 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
   margin-top: clamp(28px, 5vw, 68px);
 }
 .category-section {
+  padding-block-end: clamp(22px, 2.5vw, 38px);
   background: linear-gradient(180deg, #fffdf8, #f7f1e8);
 }
 .feeling-grid {
@@ -528,6 +529,9 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 }
 .collection-section {
   background: #fcf0ec;
+}
+#collection.home-section {
+  padding-block-start: clamp(24px, 2.8vw, 42px);
 }
 .product-grid {
   display: grid;
