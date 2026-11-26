@@ -116,7 +116,7 @@ export function ChenilleFlower({
   );
 }
 
-type Stage = ComponentType<{ playhead: Playhead; onReady: () => void }>;
+type Stage = ComponentType<{ playhead: Playhead; onAvailabilityChange: (ready: boolean) => void }>;
 
 class StoryBoundary extends Component<
   { children: ReactNode; onUnavailable: () => void },
@@ -126,7 +126,8 @@ class StoryBoundary extends Component<
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  override componentDidCatch() {
+  override componentDidCatch(error: unknown) {
+    if (import.meta.env.DEV) console.warn("The garden renderer could not draw.", error);
     this.props.onUnavailable();
   }
   override render() {
@@ -145,10 +146,10 @@ export function BloomStory() {
   const [disabled, setDisabled] = useState(false);
   const [opening, setOpening] = useState(true);
   const { products, settings } = useBloom();
-  const readyStage = useCallback(() => {
-    setStageReady(true);
+  const noStage = useCallback(() => {
+    setStageReady(false);
+    setStage(undefined);
   }, []);
-  const noStage = useCallback(() => setDisabled(true), []);
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -178,7 +179,7 @@ export function BloomStory() {
         })
         .catch((error: unknown) => {
           if (import.meta.env.DEV) console.warn("The 3D intro could not load.", error);
-          if (alive) setDisabled(true);
+          if (alive) noStage();
         });
     }
     load();
@@ -187,7 +188,7 @@ export function BloomStory() {
       alive = false;
       preference.removeEventListener("change", load);
     };
-  }, []);
+  }, [noStage]);
 
   useEffect(() => {
     const section = root.current;
@@ -302,7 +303,7 @@ export function BloomStory() {
           <div className="intro-canvas">
             {!disabled && Stage && (
               <StoryBoundary onUnavailable={noStage}>
-                <Stage playhead={playhead.current} onReady={readyStage} />
+                <Stage playhead={playhead.current} onAvailabilityChange={setStageReady} />
               </StoryBoundary>
             )}
           </div>

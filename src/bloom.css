@@ -281,6 +281,7 @@ body {
   top: 0;
   isolation: isolate;
   overflow: hidden;
+  overflow: clip;
   background: #fff6ef;
   color: #432534;
 }
@@ -365,6 +366,18 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 .intro-canvas {
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 96%, transparent);
   opacity: calc(1 - var(--bouquet-reveal, 0));
+  visibility: hidden;
+}
+.bloom-story[data-stage-ready] .intro-canvas {
+  visibility: visible;
+}
+@media (pointer: coarse) {
+  .bloom-story {
+    touch-action: pan-y pinch-zoom;
+  }
+  .intro-canvas {
+    mask-image: none;
+  }
 }
 .intro-bouquets {
   display: flex;
@@ -1435,6 +1448,13 @@ progress {
   }
   .footer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .footer-grid > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .footer-grid h2 {
+    max-width: 100%;
   }
   .footer-grid .wordmark {
     white-space: normal;

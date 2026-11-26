@@ -123,11 +123,15 @@ export function BloomPrologue({ logo, gifts, sunflower }: PreviewProps) {
   return (
     <div className="bloom-prologue">
       <div className="prologue-phone-shot">
-        <div className="prologue-camera">
+        <div className="prologue-camera prologue-opening-actor">
           <div className="prologue-actor prologue-browsing">
             <img src={actors} alt="" fetchPriority="high" draggable={false} />
             <span className="prologue-blink" aria-hidden="true" />
-            <PhoneScreen logo={logo} gifts={gifts} sunflower={sunflower} />
+          </div>
+        </div>
+        <PhoneScreen logo={logo} gifts={gifts} sunflower={sunflower} />
+        <div className="prologue-camera" aria-hidden="true">
+          <div className="prologue-actor prologue-browsing">
             <img className="prologue-thumb" src={actors} alt="" draggable={false} />
           </div>
         </div>

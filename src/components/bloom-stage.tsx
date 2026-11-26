@@ -17,6 +17,7 @@ import {
 } from "./bloom-cast";
 
 export type Playhead = { time: number; render?: (() => void) | undefined };
+type StageProps = { playhead: Playhead; onAvailabilityChange: (ready: boolean) => void };
 const shadeGeo = new THREE.CircleGeometry(1, 56);
 const shadeMat = [1, 0.72, 0.47].map(
   (scale) =>
@@ -213,7 +214,7 @@ function createStage(
   return { stage, boy, girl, bouquet, shadows };
 }
 
-function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void }) {
+function Scene({ playhead, onAvailabilityChange }: StageProps) {
   const { invalidate, camera, size, gl } = useThree();
   const drawn = useRef(false);
   const textures = useLoader(THREE.TextureLoader, [castImage, bouquetImage, gripImage, walkingArt]);
@@ -226,6 +227,8 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
     const canvas = gl.domElement;
     function contextLost(event: Event) {
       event.preventDefault();
+      drawn.current = false;
+      onAvailabilityChange(false);
     }
     const contextRestored = () => invalidate();
     canvas.addEventListener("webglcontextlost", contextLost);
@@ -253,8 +256,9 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
         actor.material.dispose();
       }
     };
-  }, [playhead, invalidate, gl, set]);
+  }, [playhead, invalidate, gl, set, onAvailabilityChange]);
   useFrame(() => {
+    if (!drawn.current && gl.getContext().isContextLost()) return;
     const t = playhead.time;
     const pose = storyPose(t);
     const ortho = camera as THREE.OrthographicCamera;
@@ -322,19 +326,13 @@ function Scene({ playhead, onReady }: { playhead: Playhead; onReady: () => void 
     }
     if (!drawn.current) {
       drawn.current = true;
-      onReady();
+      onAvailabilityChange(true);
     }
   });
   return <primitive object={set.stage} />;
 }
 
-export default function BloomStage({
-  playhead,
-  onReady,
-}: {
-  playhead: Playhead;
-  onReady: () => void;
-}) {
+export default function BloomStage({ playhead, onAvailabilityChange }: StageProps) {
   const touchScreen = window.matchMedia("(pointer: coarse)").matches;
   return (
     <Canvas
@@ -342,9 +340,9 @@ export default function BloomStage({
       camera={{ near: 0.01, far: 24, position: [0, 2.05, 8] }}
       frameloop="demand"
       dpr={[1, touchScreen ? 1 : 1.35]}
-      gl={{ alpha: true, antialias: true }}
+      gl={{ alpha: true, antialias: !touchScreen }}
     >
-      <Scene playhead={playhead} onReady={onReady} />
+      <Scene playhead={playhead} onAvailabilityChange={onAvailabilityChange} />
     </Canvas>
   );
 }
