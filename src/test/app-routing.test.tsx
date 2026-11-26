@@ -23,9 +23,9 @@ describe("App routing", () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     try {
       render(
-        <MemoryRouter>
+        <MemoryRouter initialEntries={["/contact?gift=pocketful-of-sun"]}>
           <BloomShell store={catalogue} refreshStore={async () => {}}>
-            <Contact giftName="Sunflower Bouquet" />
+            <Contact />
           </BloomShell>
         </MemoryRouter>,
       );
@@ -66,6 +66,17 @@ describe("App routing", () => {
     expect(resolvePage("/", catalogue).status).toBe(200);
     expect(resolvePage("/product/pocketful-of-sun", catalogue).title).toBe("Sunflower Bouquet");
     expect(resolvePage("/admin", catalogue).noIndex).toBe(true);
+  });
+
+  it("links to Contact without carrying the current category filter", () => {
+    render(
+      <MemoryRouter initialEntries={["/bouquets?category=single-flowers"]}>
+        <BloomShell store={catalogue} refreshStore={async () => {}}>
+          <main />
+        </BloomShell>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
   });
 
   it("keeps the bouquet builder URL usable when the builder is paused", () => {

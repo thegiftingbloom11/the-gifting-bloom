@@ -332,7 +332,11 @@ export function BloomStory() {
             <Link to="/" hash="collection" search={{}}>
               Explore the Gallery
             </Link>
-            <Link to="/" hash={bouquetBuilderEnabled ? "customise" : "contact"} search={true}>
+            <Link
+              to={bouquetBuilderEnabled ? "/" : "/contact"}
+              hash={bouquetBuilderEnabled ? "customise" : undefined}
+              search={bouquetBuilderEnabled ? true : undefined}
+            >
               {bouquetBuilderEnabled ? "Customise Your Gift" : "Enquire About a Custom Gift"}
             </Link>
           </div>

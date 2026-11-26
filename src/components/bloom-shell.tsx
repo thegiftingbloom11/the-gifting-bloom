@@ -93,9 +93,9 @@ export function BloomShell({
                   {[...links, ["gift-finder", "Gift Finder"]].map(([hash, name]) => (
                     <DialogClose asChild key={hash}>
                       <Link
-                        to="/"
-                        hash={hash}
-                        search={hash === "collection" ? {} : true}
+                        to={hash === "contact" ? "/contact" : "/"}
+                        hash={hash === "contact" ? undefined : hash}
+                        search={hash === "collection" || hash === "contact" ? undefined : true}
                         activeOptions={activeSection}
                       >
                         {name}
@@ -114,9 +114,9 @@ export function BloomShell({
               {links.map(([hash, name]) => (
                 <Link
                   key={hash}
-                  to="/"
-                  hash={hash}
-                  search={hash === "collection" ? {} : true}
+                  to={hash === "contact" ? "/contact" : "/"}
+                  hash={hash === "contact" ? undefined : hash}
+                  search={hash === "collection" || hash === "contact" ? undefined : true}
                   activeOptions={activeSection}
                 >
                   {name}

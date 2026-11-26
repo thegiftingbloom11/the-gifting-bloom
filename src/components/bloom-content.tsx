@@ -296,8 +296,8 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
           <div className="button-row">
             <Link
               className="btn btn-primary"
-              to="/"
-              hash={bouquetBuilderEnabled ? "customise" : "contact"}
+              to={bouquetBuilderEnabled ? "/" : "/contact"}
+              hash={bouquetBuilderEnabled ? "customise" : undefined}
             >
               {bouquetBuilderEnabled ? "Build a bouquet" : "Ask about a custom bouquet"}
               <ArrowRight size={16} />
@@ -317,16 +317,25 @@ export function Contact({
   giftName = "",
   giftColour = "",
 }: { embedded?: boolean; giftName?: string; giftColour?: string } = {}) {
-  const { settings } = useBloom();
+  const { products, settings } = useBloom();
+  const [search] = useSearchParams();
+  const requestedGift = embedded
+    ? giftName
+    : products.find((product) => product.slug === search.get("gift"))?.name;
+  const requestedColour = embedded ? giftColour : search.get("giftColour")?.trim().slice(0, 80);
   const address = settings["contact_address"]?.trim() || businessAddress;
   const email = settings["contact_email"]?.trim() || businessEmail;
   const [error, setError] = useState("");
-  const giftMessage = giftName
-    ? `Hi! I'd like to ask about ${giftName}.`
-    : giftColour
-      ? `Hi! I'd like to request a gift in this colour or combination: ${giftColour}.`
+  const giftMessage = requestedGift
+    ? `Hi! I'd like to ask about ${requestedGift}.`
+    : requestedColour
+      ? `Hi! I'd like to request a gift in this colour or combination: ${requestedColour}.`
       : "";
-  const enquiryType = giftName ? "Gift enquiry" : giftColour ? "Custom gift enquiry" : undefined;
+  const enquiryType = requestedGift
+    ? "Gift enquiry"
+    : requestedColour
+      ? "Custom gift enquiry"
+      : undefined;
   const chatMessage = giftMessage || "Hi! I have a question about a gift.";
   const chat =
     whatsapp(settings["whatsapp"], chatMessage) ?? whatsapp(businessWhatsAppNumber, chatMessage);
@@ -372,7 +381,7 @@ export function Contact({
           <p className="contact-required-note">
             Fields marked * are required. Review and send your enquiry in WhatsApp.
           </p>
-          <form className="contact-form" onSubmit={submit}>
+          <form key={giftMessage} className="contact-form" onSubmit={submit}>
             <label>
               <span>
                 Full name <span aria-hidden="true">*</span>
@@ -525,7 +534,7 @@ export function Policy({ type }: { type: keyof typeof policies }) {
         <p className="preserve-lines">
           {settings[type === "privacy" ? "policy_privacy" : "policy_site_terms"] || fallback}
         </p>
-        <Link to="/" hash="contact" className="text-link">
+        <Link to="/contact" className="text-link">
           Get in touch <ArrowRight size={16} />
         </Link>
       </div>

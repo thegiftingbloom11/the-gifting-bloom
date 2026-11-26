@@ -10,8 +10,8 @@ import {
 type Destination = {
   to: string;
   params?: Record<string, string>;
-  search?: Record<string, string | undefined> | true;
-  hash?: string | true;
+  search?: Record<string, string | undefined> | true | undefined;
+  hash?: string | true | undefined;
 };
 
 type ActiveOptions = { exact?: boolean; includeSearch?: boolean; includeHash?: boolean };

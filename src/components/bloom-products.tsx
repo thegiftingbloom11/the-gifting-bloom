@@ -1,7 +1,6 @@
 import { Link } from "./bloom-navigation";
 import { ArrowRight, Flower2 } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
 import {
   Dialog,
   DialogClose,
@@ -105,7 +104,7 @@ export function GiftDetails({ product }: { product: Product }) {
       <p>{product.description}</p>
       {!!product.colors.length && <Swatches values={product.colors} />}
       {!!product.variants.length && <p>Styles: {product.variants.join(", ")}</p>}
-      <Link className="text-link" to="/" hash="contact" search={{ gift: product.slug }}>
+      <Link className="text-link" to="/contact" search={{ gift: product.slug }}>
         Ask about this gift <ArrowRight size={16} />
       </Link>
     </div>
@@ -113,7 +112,6 @@ export function GiftDetails({ product }: { product: Product }) {
 }
 
 function PreviewDetails({ product }: { product: Product }) {
-  const [search] = useSearchParams();
   const canCustomise = bouquetBuilderEnabled && product.category === "bouquets";
   return (
     <div className="quick-view-details">
@@ -148,12 +146,7 @@ function PreviewDetails({ product }: { product: Product }) {
       <div className="quick-view-actions">
         <p>Ask about pricing, availability or colour options.</p>
         <DialogClose asChild>
-          <Link
-            className="btn btn-primary"
-            to="/"
-            hash="contact"
-            search={{ ...Object.fromEntries(search), gift: product.slug }}
-          >
+          <Link className="btn btn-primary" to="/contact" search={{ gift: product.slug }}>
             Enquire about this gift <ArrowRight size={16} />
           </Link>
         </DialogClose>
@@ -256,9 +249,8 @@ export function ProductCard({
             ) : embedded ? (
               <Link
                 className="text-link"
-                to="/"
-                hash="contact"
-                search={product.category === "bouquets" ? { gift: product.slug } : true}
+                to="/contact"
+                search={product.category === "bouquets" ? { gift: product.slug } : undefined}
               >
                 Enquire <ArrowRight size={14} />
               </Link>

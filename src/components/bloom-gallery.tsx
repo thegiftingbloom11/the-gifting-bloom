@@ -377,7 +377,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
     });
   }
   const colourRequest = manualColour && enteredColour && (
-    <Link className="btn btn-outline" to="/" hash="contact" search={{ giftColour: enteredColour }}>
+    <Link className="btn btn-outline" to="/contact" search={{ giftColour: enteredColour }}>
       Send colour request <ArrowRight size={16} />
     </Link>
   );
