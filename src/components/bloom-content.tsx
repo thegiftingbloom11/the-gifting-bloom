@@ -1,7 +1,7 @@
 import { Link } from "./bloom-navigation";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
-import { ArrowRight, ArrowUpRight, Instagram, Mail, MapPin, Play } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Instagram, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   bouquetBuilderEnabled,
@@ -490,16 +490,12 @@ export function Contact({
               <ArrowUpRight size={15} aria-hidden="true" />
             </a>
             <a href={`mailto:${email}`}>
-              <span className="contact-social-icon">
-                <Mail size={22} aria-hidden="true" />
-              </span>
+              <span className="contact-social-mark contact-email-mark" aria-hidden="true" />
               <span>{email}</span>
               <ArrowUpRight size={15} aria-hidden="true" />
             </a>
             <address className="contact-address">
-              <span className="contact-social-icon">
-                <MapPin size={22} aria-hidden="true" />
-              </span>
+              <span className="contact-social-mark contact-address-mark" aria-hidden="true" />
               <span className="preserve-lines">{address}</span>
             </address>
           </div>
@@ -523,13 +519,13 @@ export function Policy({ type }: { type: keyof typeof policies }) {
   const { settings } = useBloom();
   const [title, fallback] = policies[type];
   return (
-    <main className="wrap inner-page">
+    <main className={type === "privacy" ? "wrap inner-page privacy-page" : "wrap inner-page"}>
       <PageHeading label="Customer care" title={title} />
       <div className="panel policy">
         <p className="preserve-lines">
           {settings[type === "privacy" ? "policy_privacy" : "policy_site_terms"] || fallback}
         </p>
-        <Link to="/contact" className="text-link">
+        <Link to="/" hash="contact" className="text-link">
           Get in touch <ArrowRight size={16} />
         </Link>
       </div>

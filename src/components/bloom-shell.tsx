@@ -67,7 +67,7 @@ export function BloomShell({
   refreshStore: () => Promise<void>;
   children: ReactNode;
 }) {
-  const path = useLocation().pathname;
+  const path = useLocation().pathname.replace(/\/+$/, "") || "/";
   const [menu, setMenu] = useState(false);
   const brand = store.settings["brand_name"] || "The Gifting Bloom";
   const social = store.settings["instagram"] || instagram;
@@ -78,7 +78,7 @@ export function BloomShell({
   return (
     <StoreContext.Provider value={{ ...store, refreshStore }}>
       <Toaster position="bottom-center" />
-      {path !== "/" && !path.startsWith("/admin") && (
+      {path !== "/" && path !== "/privacy-policy" && !path.startsWith("/admin") && (
         <header className="bloom-nav bloom-nav-solid">
           <div className="nav-inner">
             <Dialog open={menu} onOpenChange={setMenu}>

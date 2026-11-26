@@ -939,6 +939,9 @@ button.swatch[aria-pressed="true"] {
   padding-bottom: clamp(65px, 8vw, 110px);
   min-height: 65vh;
 }
+.privacy-page {
+  padding-top: clamp(44px, 6vw, 92px);
+}
 .page-heading {
   max-width: 880px;
   margin-bottom: 30px;
@@ -1386,14 +1389,12 @@ input[type="checkbox"] {
 .contact-links a:hover .contact-social-mark {
   transform: translateY(-2px) rotate(-5deg);
 }
-.contact-social-icon {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--plum);
-  color: white;
+.contact-email-mark,
+.contact-address-mark {
+  background-image: url("./assets/contact-details-illustrations.png");
+}
+.contact-address-mark {
+  background-position: right center;
 }
 .contact-links a > svg {
   color: var(--contact-accent, var(--rose));
