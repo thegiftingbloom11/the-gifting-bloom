@@ -1284,7 +1284,7 @@ input[type="checkbox"] {
 .gift-finder-wallpaper {
   position: absolute;
   inset: 0;
-  background-position: center 78%;
+  background-position: center;
   background-size: cover;
   pointer-events: none;
   animation: gift-finder-wallpaper-in 420ms ease-out;
@@ -1300,36 +1300,15 @@ input[type="checkbox"] {
   background-color: #f5a1a4;
   background-blend-mode: multiply;
 }
+.gift-finder-preview[data-occasion="Graduation"] .gift-finder-wallpaper {
+  background-color: #049ad0;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+}
 @keyframes gift-finder-wallpaper-in {
   from {
     opacity: 0;
   }
-}
-.gift-finder-motifs {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  align-items: center;
-  padding: 7% 9%;
-  color: color-mix(in srgb, var(--finder-accent), #fff 25%);
-  pointer-events: none;
-}
-.gift-finder-motifs svg {
-  width: clamp(24px, 4vw, 53px);
-  height: auto;
-  rotate: -13deg;
-  animation: gift-finder-arrive 480ms ease-out;
-}
-.gift-finder-motifs svg:nth-child(even) {
-  justify-self: end;
-  rotate: 15deg;
-}
-.gift-finder-motifs svg:nth-child(3),
-.gift-finder-motifs svg:nth-child(6) {
-  scale: 0.77;
-  opacity: 0.65;
 }
 .gift-finder-scene {
   position: relative;

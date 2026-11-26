@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Cake,
-  Flame,
   Flower2,
   Gem,
   Gift,
@@ -17,7 +16,14 @@ import {
 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import { colourValue, matchesProductCategory, occasions, type Product } from "@/lib/bloom";
+import anniversaryWallpaper from "@/assets/gift-finder-anniversary-wallpaper.jpg";
+import anyOccasionWallpaper from "@/assets/gift-finder-any-occasion-wallpaper.jpg";
 import birthdayWallpaper from "@/assets/gift-finder-birthday-wallpaper.jpg";
+import congratulationsWallpaper from "@/assets/gift-finder-congratulations-wallpaper.jpg";
+import festiveWallpaper from "@/assets/gift-finder-festive-gifting-wallpaper.jpg";
+import friendshipWallpaper from "@/assets/gift-finder-friendship-wallpaper.jpg";
+import graduationWallpaper from "@/assets/gift-finder-graduation-wallpaper.jpg";
+import justBecauseWallpaper from "@/assets/gift-finder-just-because-wallpaper.jpg";
 import valentineWallpaper from "@/assets/gift-finder-valentine-wallpaper.jpg";
 import { useBloom } from "./bloom-shell";
 import {
@@ -226,7 +232,7 @@ const recipientArt = {
 };
 const occasionArt: Record<
   (typeof occasions)[number] | "Any occasion",
-  { icon: LucideIcon; accent: string; edge: string; wallpaper?: string; motif?: LucideIcon }
+  { icon: LucideIcon; accent: string; edge: string; wallpaper: string; position?: string }
 > = {
   "Valentine's Day": {
     icon: Heart,
@@ -234,19 +240,55 @@ const occasionArt: Record<
     edge: "#e87788",
     wallpaper: valentineWallpaper,
   },
-  Birthdays: { icon: Cake, accent: "#b65175", edge: "#e5b9e3", wallpaper: birthdayWallpaper },
-  Anniversaries: { icon: Heart, motif: Gem, accent: "#a85881", edge: "#ebbecf" },
+  Birthdays: {
+    icon: Cake,
+    accent: "#b65175",
+    edge: "#e5b9e3",
+    wallpaper: birthdayWallpaper,
+    position: "center 78%",
+  },
+  Anniversaries: { icon: Gem, accent: "#a85881", edge: "#ebbecf", wallpaper: anniversaryWallpaper },
   "Friendship Day": {
     icon: HeartHandshake,
-    motif: HeartHandshake,
     accent: "#8260ac",
     edge: "#d6c6ee",
+    wallpaper: friendshipWallpaper,
+    position: "center 72%",
   },
-  Graduation: { icon: GraduationCap, motif: GraduationCap, accent: "#68549b", edge: "#cabfe9" },
-  Congratulations: { icon: PartyPopper, motif: PartyPopper, accent: "#ac661c", edge: "#f2cf8b" },
-  "Festive Gifting": { icon: Sparkles, motif: Flame, accent: "#b4672c", edge: "#edbd87" },
-  "Just Because": { icon: Flower2, motif: Flower2, accent: "#517b52", edge: "#c6d8b4" },
-  "Any occasion": { icon: Gift, motif: Gift, accent: "#a65f51", edge: "#efcaba" },
+  Graduation: {
+    icon: GraduationCap,
+    accent: "#45678a",
+    edge: "#b9d8ed",
+    wallpaper: graduationWallpaper,
+    position: "right center",
+  },
+  Congratulations: {
+    icon: PartyPopper,
+    accent: "#ac661c",
+    edge: "#f2cf8b",
+    wallpaper: congratulationsWallpaper,
+    position: "center top",
+  },
+  "Festive Gifting": {
+    icon: Sparkles,
+    accent: "#b4672c",
+    edge: "#edbd87",
+    wallpaper: festiveWallpaper,
+    position: "center 75%",
+  },
+  "Just Because": {
+    icon: Flower2,
+    accent: "#517b52",
+    edge: "#c6d8b4",
+    wallpaper: justBecauseWallpaper,
+    position: "center 68%",
+  },
+  "Any occasion": {
+    icon: Gift,
+    accent: "#a65f51",
+    edge: "#efcaba",
+    wallpaper: anyOccasionWallpaper,
+  },
 };
 
 function GiftFinderPreview({ step, answers }: { step: number; answers: [string, string, string] }) {
@@ -256,7 +298,6 @@ function GiftFinderPreview({ step, answers }: { step: number; answers: [string, 
   const person = recipientArt[recipients[recipientIndex] ?? "Anyone"];
   const event = occasionArt[occasion as keyof typeof occasionArt] ?? occasionArt["Any occasion"];
   const themed = step === 1 && !!occasion;
-  const Motif = event.motif;
   const selected = answers[step];
   const { icon: Icon, accent } =
     step === 0
@@ -280,19 +321,12 @@ function GiftFinderPreview({ step, answers }: { step: number; answers: [string, 
         } as CSSProperties
       }
     >
-      {themed && event.wallpaper && (
+      {themed && (
         <div
           className="gift-finder-wallpaper"
           key={occasion}
-          style={{ backgroundImage: `url(${event.wallpaper})` }}
+          style={{ backgroundImage: `url(${event.wallpaper})`, backgroundPosition: event.position }}
         />
-      )}
-      {themed && Motif && (
-        <div className="gift-finder-motifs" key={occasion}>
-          {Array.from({ length: 6 }, (_, index) => (
-            <Motif key={index} strokeWidth={1.35} />
-          ))}
-        </div>
       )}
       <div className="gift-finder-scene" key={step + ":" + selected}>
         <div className="gift-finder-art" data-scene={scene} />
