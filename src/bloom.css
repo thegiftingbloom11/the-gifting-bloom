@@ -479,7 +479,7 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
   margin-top: clamp(28px, 5vw, 68px);
 }
 .category-section {
-  background: #fcf8f6;
+  background: linear-gradient(180deg, #fffdf8, #f7f1e8);
 }
 .feeling-grid {
   display: grid;
