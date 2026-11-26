@@ -1270,6 +1270,9 @@ input[type="checkbox"] {
   min-height: 44px;
   overflow-wrap: anywhere;
 }
+.gift-finder-colour-input {
+  margin-bottom: 16px;
+}
 .gift-finder-preview {
   position: relative;
   display: grid;
@@ -1349,9 +1352,11 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 9px;
+  max-width: 100%;
   color: var(--plum);
   font-size: 0.9rem;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 .gift-finder-preview[data-occasion] .gift-finder-caption > span + span {
   border-radius: 999px;
@@ -1360,6 +1365,7 @@ input[type="checkbox"] {
 }
 .gift-finder-symbol {
   display: grid;
+  flex: none;
   width: 38px;
   aspect-ratio: 1;
   place-items: center;

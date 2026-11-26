@@ -291,7 +291,15 @@ const occasionArt: Record<
   },
 };
 
-function GiftFinderPreview({ step, answers }: { step: number; answers: [string, string, string] }) {
+function GiftFinderPreview({
+  step,
+  answers,
+  manualColour,
+}: {
+  step: number;
+  answers: [string, string, string];
+  manualColour: boolean;
+}) {
   const [recipient, occasion, colour] = answers;
   const recipientIndex = recipients.findIndex((value) => value === recipient);
   const scene = step === 2 ? 5 : recipientIndex < 0 ? 4 : recipientIndex;
@@ -328,7 +336,10 @@ function GiftFinderPreview({ step, answers }: { step: number; answers: [string, 
           style={{ backgroundImage: `url(${event.wallpaper})`, backgroundPosition: event.position }}
         />
       )}
-      <div className="gift-finder-scene" key={step + ":" + selected}>
+      <div
+        className="gift-finder-scene"
+        key={step + ":" + (step === 2 && manualColour ? "manual" : selected)}
+      >
         <div className="gift-finder-art" data-scene={scene} />
         <div className="gift-finder-caption">
           <span className="gift-finder-symbol">
@@ -346,7 +357,23 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<[string, string, string]>(["", "", ""]);
+  const [manualColour, setManualColour] = useState(false);
   const palette = [...new Set(products.flatMap(({ colors }) => colors))];
+  const enteredColour = answers[2].trim();
+  const selectedColour =
+    palette.find((colour) => colour.toLowerCase() === enteredColour.toLowerCase()) ?? enteredColour;
+  function selectAnswer(value: string) {
+    setAnswers((current) => {
+      const next: typeof current = [...current];
+      next[step] = value;
+      return next;
+    });
+  }
+  const colourRequest = manualColour && enteredColour && (
+    <Link className="btn btn-outline" to="/" hash="contact" search={{ giftColour: enteredColour }}>
+      Send colour request <ArrowRight size={16} />
+    </Link>
+  );
   const questions = [
     ["Who are you gifting?", recipients],
     ["What’s the occasion?", [...occasions, "Any occasion"]],
@@ -356,7 +383,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
 
   const rank = (item: Product) =>
     Number(item.occasions.includes(answers[1])) * 3 +
-    Number(item.colors.includes(answers[2])) * 2 +
+    Number(item.colors.includes(selectedColour)) * 2 +
     Number(
       answers[0] === "Partner"
         ? item.category === "bouquets"
@@ -366,7 +393,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
   const matches = products
     .filter(
       (item) =>
-        (answers[2] === "Any colour" || item.colors.includes(answers[2])) &&
+        (selectedColour === "Any colour" || item.colors.includes(selectedColour)) &&
         (answers[1] === "Any occasion" || item.occasions.includes(answers[1])),
     )
     .sort((a, b) => rank(b) - rank(a))
@@ -404,14 +431,11 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
                   type="button"
                   key={value}
                   className="choice"
-                  aria-pressed={answers[step] === value}
-                  onClick={() =>
-                    setAnswers((current) => {
-                      const next: typeof current = [...current];
-                      next[step] = value;
-                      return next;
-                    })
-                  }
+                  aria-pressed={answers[step] === value && (step !== 2 || !manualColour)}
+                  onClick={() => {
+                    if (step === 2) setManualColour(false);
+                    selectAnswer(value);
+                  }}
                 >
                   {step === 2 && value !== "Any colour" && (
                     <span
@@ -424,6 +448,22 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
                 </button>
               ))}
             </div>
+            {step === 2 && (
+              <label className="gift-finder-colour-input">
+                Type a colour or combination
+                <input
+                  type="text"
+                  name="gift-colour"
+                  value={manualColour ? answers[2] : ""}
+                  maxLength={80}
+                  placeholder="e.g. Peach and ivory"
+                  onChange={(event) => {
+                    setManualColour(true);
+                    selectAnswer(event.target.value);
+                  }}
+                />
+              </label>
+            )}
             <div className="button-row">
               {step > 0 && (
                 <button className="btn btn-outline" onClick={() => setStep(step - 1)}>
@@ -432,14 +472,19 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
               )}
               <button
                 className="btn btn-primary"
-                disabled={!answers[step]}
+                disabled={!answers[step]?.trim()}
                 onClick={() => setStep(step + 1)}
               >
                 {step === 2 ? "See matches" : "Continue"} <ArrowRight size={16} />
               </button>
+              {step === 2 && colourRequest}
             </div>
           </div>
-          <GiftFinderPreview step={step} answers={answers} />
+          <GiftFinderPreview
+            step={step}
+            answers={[answers[0], answers[1], selectedColour]}
+            manualColour={manualColour}
+          />
         </div>
       ) : (
         <div>
@@ -453,6 +498,7 @@ export function GiftFinder({ embedded = false }: { embedded?: boolean } = {}) {
             <button className="btn btn-outline" onClick={() => setStep(0)}>
               Change answers
             </button>
+            {colourRequest}
             <button
               className="btn btn-primary"
               onClick={() => void navigate({ to: "/", hash: "collection", search: {} })}

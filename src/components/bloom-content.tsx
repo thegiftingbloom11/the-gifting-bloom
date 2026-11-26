@@ -27,6 +27,7 @@ export function Home({ occasion, category }: { occasion: string; category: strin
   const [search] = useSearchParams();
   const giftSlug = search.get("gift");
   const gift = giftSlug ? products.find((product) => product.slug === giftSlug) : undefined;
+  const giftColour = search.get("giftColour")?.trim().slice(0, 80) ?? "";
   const profile = settings["instagram"] || instagram;
   return (
     <main className="single-page" id="home">
@@ -111,7 +112,12 @@ export function Home({ occasion, category }: { occasion: string; category: strin
           {!!reels.length && <ReelGrid embedded />}
         </div>
       </section>
-      <Contact key={gift?.slug} embedded giftName={gift?.name ?? ""} />
+      <Contact
+        key={gift ? `gift:${gift.slug}` : `colour:${giftColour}`}
+        embedded
+        giftName={gift?.name ?? ""}
+        giftColour={giftColour}
+      />
     </main>
   );
 }
@@ -282,12 +288,18 @@ export function OurStory({ embedded = false }: { embedded?: boolean } = {}) {
 export function Contact({
   embedded = false,
   giftName = "",
-}: { embedded?: boolean; giftName?: string } = {}) {
+  giftColour = "",
+}: { embedded?: boolean; giftName?: string; giftColour?: string } = {}) {
   const { settings } = useBloom();
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
-  const giftMessage = giftName ? `Hi! I'd like to ask about ${giftName}.` : "";
+  const giftMessage = giftName
+    ? `Hi! I'd like to ask about ${giftName}.`
+    : giftColour
+      ? `Hi! I'd like to request a gift in this colour or combination: ${giftColour}.`
+      : "";
+  const enquiryType = giftName ? "Gift enquiry" : giftColour ? "Custom gift enquiry" : undefined;
   const link = whatsapp(settings["whatsapp"], giftMessage || "Hi! I have a question about a gift.");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -349,7 +361,7 @@ export function Contact({
               </label>
               <label>
                 What’s it about?
-                <select name="subject" defaultValue={giftName ? "Gift enquiry" : undefined}>
+                <select name="subject" defaultValue={enquiryType}>
                   <option>General enquiry</option>
                   <option>Gift enquiry</option>
                   <option>Custom gift enquiry</option>
