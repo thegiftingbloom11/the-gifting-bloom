@@ -532,6 +532,10 @@ body:has(.bloom-story[data-opening="true"]) .floating-chat {
 }
 #collection.home-section {
   padding-block-start: clamp(24px, 2.8vw, 42px);
+  padding-block-end: clamp(22px, 2.5vw, 38px);
+}
+#gift-finder.home-section {
+  padding-block-start: clamp(24px, 2.8vw, 42px);
 }
 .product-grid {
   display: grid;
